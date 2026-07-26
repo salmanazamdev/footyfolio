@@ -34,7 +34,7 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
         <div className="bg-[#111827] text-white p-6 flex flex-wrap items-center justify-between gap-4">
           
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#16A34A] text-white flex items-center justify-center text-xl font-bold font-sans border border-white/20 shadow-xs">
+            <div className="w-14 h-14 rounded-full bg-white text-[#15803D] flex items-center justify-center text-xl font-bold shrink-0 border-2 border-white/90 shadow-sm">
               {talent.name.charAt(0)}
             </div>
             <div>

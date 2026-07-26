@@ -214,7 +214,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-[#16A34A] text-white flex items-center justify-center font-sans font-bold text-lg shadow-xs">
+                      <div className="w-12 h-12 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-bold text-lg shrink-0">
                         {talent.name.charAt(0)}
                       </div>
                       <div>

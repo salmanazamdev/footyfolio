@@ -77,7 +77,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
       {/* Player Header Banner */}
       <div className="rounded-2xl sm:rounded-3xl bg-[#16A34A] text-white p-5 sm:p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center text-xl sm:text-2xl font-bold font-sans border border-white/30 shadow-xs shrink-0">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-[#15803D] flex items-center justify-center text-xl sm:text-2xl font-bold shrink-0 shadow-sm border-2 border-white/90">
             {talent.name.charAt(0)}
           </div>
 
