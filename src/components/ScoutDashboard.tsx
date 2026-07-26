@@ -67,12 +67,12 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in">
       
       {/* Scout Header Banner */}
-      <div className="rounded-3xl bg-[#D97706] text-white p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-wrap items-center justify-between gap-6">
+      <div className="rounded-2xl sm:rounded-3xl bg-[#D97706] text-white p-5 sm:p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
               {scoutProfile.organization || 'Official Scout'}
             </span>
@@ -81,7 +81,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
               Scout Discovery Mode
             </span>
           </div>
-          <h1 className="font-sans text-3xl font-bold text-white">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white">
             Welcome back, {scoutProfile.name}
           </h1>
           <p className="text-xs text-white/90 mt-1 max-w-xl">
@@ -90,24 +90,24 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
         </div>
 
         {/* Shortlist Counter Badge */}
-        <div className="flex items-center gap-3">
-          <div className="bg-[#111827] text-white p-4 rounded-2xl text-center min-w-32 shadow-xs">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="bg-[#111827] text-white p-3.5 sm:p-4 rounded-2xl text-center w-full sm:min-w-32 shadow-xs flex sm:flex-col justify-between sm:justify-center items-center">
             <span className="text-[10px] font-mono uppercase text-[#D97706] font-bold block">Shortlisted</span>
-            <span className="font-sans text-2xl font-bold text-white">{shortlists.length} Players</span>
+            <span className="font-sans text-xl sm:text-2xl font-bold text-white">{shortlists.length} Players</span>
           </div>
         </div>
       </div>
 
       {/* Tabs & Search Filter Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-xs space-y-4">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E5E7EB] shadow-xs space-y-4">
         
         {/* Top Tab Bar: Talent Feed vs My Shortlist */}
-        <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E5E7EB] pb-3 gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => onTabChange('feed')}
               id="btn-tab-talent-feed"
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'feed'
                   ? 'bg-[#16A34A] text-white'
                   : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F1F5F9]'
@@ -119,7 +119,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             <button
               onClick={() => onTabChange('shortlist')}
               id="btn-tab-my-shortlist"
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'shortlist'
                   ? 'bg-[#D97706] text-white'
                   : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F1F5F9]'
@@ -136,7 +136,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
         </div>
 
         {/* Search & Select Controls */}
-        <div className="grid md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           
           {/* Search Input */}
           <div className="relative">

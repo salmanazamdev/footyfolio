@@ -72,26 +72,26 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in">
       
       {/* Player Header Banner */}
-      <div className="rounded-3xl bg-[#16A34A] text-white p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-wrap items-center justify-between gap-6 relative overflow-hidden">
-        <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center text-2xl font-bold font-sans border border-white/30 shadow-xs">
+      <div className="rounded-2xl sm:rounded-3xl bg-[#16A34A] text-white p-5 sm:p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 text-white flex items-center justify-center text-xl sm:text-2xl font-bold font-sans border border-white/30 shadow-xs shrink-0">
             {talent.name.charAt(0)}
           </div>
 
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
+              <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
                 {talent.position}
               </span>
               <span className="text-xs text-white/90 flex items-center gap-1 font-medium">
-                <MapPin className="w-3.5 h-3.5 text-[#D97706]" />
+                <MapPin className="w-3.5 h-3.5 text-[#FEF08A]" />
                 {talent.city}
               </span>
             </div>
-            <h1 className="font-sans text-3xl font-bold text-white">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white">
               {talent.name}
             </h1>
             <p className="text-xs text-white/80 mt-1 max-w-xl">
@@ -101,11 +101,11 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         </div>
 
         {/* Action button */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => setIsLogModalOpen(true)}
             id="btn-talent-dash-log-match"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#D97706] text-white hover:bg-[#B45309] text-xs font-bold shadow-sm transition-all active:scale-98 cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#D97706] text-white hover:bg-[#B45309] text-xs font-bold shadow-sm transition-all active:scale-98 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Log Match Performance</span>
@@ -114,25 +114,25 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
       </div>
 
       {/* Stats Counter Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <span className="text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Matches Logged</span>
-          <span className="font-sans text-3xl font-bold text-[#111827]">{talent.matches.length}</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Matches Logged</span>
+          <span className="font-sans text-2xl sm:text-3xl font-bold text-[#111827]">{talent.matches.length}</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <span className="text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Total Goals</span>
-          <span className="font-sans text-3xl font-bold text-[#16A34A]">{totalGoals}</span>
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Total Goals</span>
+          <span className="font-sans text-2xl sm:text-3xl font-bold text-[#16A34A]">{totalGoals}</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <span className="text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Total Assists</span>
-          <span className="font-sans text-3xl font-bold text-[#D97706]">{totalAssists}</span>
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Total Assists</span>
+          <span className="font-sans text-2xl sm:text-3xl font-bold text-[#D97706]">{totalAssists}</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <span className="text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Minutes Played</span>
-          <span className="font-sans text-3xl font-bold text-[#111827]">{totalMinutes}'</span>
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Minutes Played</span>
+          <span className="font-sans text-2xl sm:text-3xl font-bold text-[#111827]">{totalMinutes}'</span>
         </div>
       </div>
 
