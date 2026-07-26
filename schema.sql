@@ -1,8 +1,4 @@
-/**
- * FootyFolio Supabase Integration & Schema Helper
- */
-
-export const SUPABASE_SQL_SCHEMA = `-- FootyFolio Supabase Database Schema
+-- FootyFolio Supabase Database Schema
 -- Run this in your Supabase SQL Editor (https://supabase.com/dashboard/project/_/sql)
 
 -- 1. Profiles Table
@@ -79,6 +75,26 @@ ALTER TABLE public.scouting_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scout_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shortlists ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if re-running script
+DROP POLICY IF EXISTS "Public profiles viewable by authenticated users" ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+
+DROP POLICY IF EXISTS "Talent details viewable by authenticated users" ON public.talent_details;
+DROP POLICY IF EXISTS "Users can edit own talent details" ON public.talent_details;
+
+DROP POLICY IF EXISTS "Matches viewable by authenticated users" ON public.matches;
+DROP POLICY IF EXISTS "Users can edit own matches" ON public.matches;
+
+DROP POLICY IF EXISTS "Scouting reports viewable by authenticated users" ON public.scouting_reports;
+DROP POLICY IF EXISTS "Users can edit own scouting reports" ON public.scouting_reports;
+
+DROP POLICY IF EXISTS "Scout preferences viewable by owner" ON public.scout_preferences;
+DROP POLICY IF EXISTS "Scouts can manage own preferences" ON public.scout_preferences;
+
+DROP POLICY IF EXISTS "Shortlists viewable by scout owner" ON public.shortlists;
+DROP POLICY IF EXISTS "Scouts can manage own shortlists" ON public.shortlists;
+
 -- 1. Profiles RLS
 CREATE POLICY "Public profiles viewable by authenticated users" 
   ON public.profiles FOR SELECT TO authenticated USING (true);
@@ -123,4 +139,3 @@ CREATE POLICY "Shortlists viewable by scout owner"
 
 CREATE POLICY "Scouts can manage own shortlists" 
   ON public.shortlists FOR ALL TO authenticated USING (auth.uid() = scout_profile_id);
-`;

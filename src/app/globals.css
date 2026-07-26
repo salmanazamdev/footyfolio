@@ -9,7 +9,6 @@
   --color-text-secondary: #6B7280;
   --color-border-light: #E5E7EB;
 
-  --font-serif: "Bitter", Georgia, serif;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
@@ -19,7 +18,17 @@ body {
   color: #111827;
 }
 
-h1, h2, h3, h4, .font-serif-heading {
-  font-family: var(--font-sans);
-  font-weight: 700;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
 }
