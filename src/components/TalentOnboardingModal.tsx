@@ -150,22 +150,22 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
-      <div className="bg-[#F6F1E7] border-2 border-[#1E1C19] rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col">
+      <div className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col">
         
         {/* Onboarding Header Banner */}
-        <div className="bg-[#2D5D3F] text-[#F6F1E7] p-5 flex items-center justify-between shrink-0">
+        <div className="bg-[#16A34A] text-white p-5 flex items-center justify-between shrink-0">
           <div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#C9862E] font-bold block">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#FEF08A] font-bold block">
               Player Registration • Step {step} of 3
             </span>
-            <h3 className="font-serif-heading text-xl font-bold">Create Your FootyFolio Profile</h3>
+            <h3 className="font-sans text-xl font-bold">Create Your FootyFolio Profile</h3>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${
-                  step === s ? 'bg-[#C9862E] scale-125' : step > s ? 'bg-[#F6F1E7]' : 'bg-white/30'
+                  step === s ? 'bg-[#D97706] scale-125' : step > s ? 'bg-white' : 'bg-white/30'
                 }`}
               />
             ))}
@@ -178,45 +178,45 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
           {/* STEP 1: Basic Info */}
           {step === 1 && (
             <form onSubmit={handleNextToStep2} className="space-y-4">
-              <div className="bg-white/60 p-3.5 rounded-xl border border-[#8C8577]/20 flex items-center gap-3 mb-2">
-                <User className="w-5 h-5 text-[#2D5D3F]" />
-                <p className="text-xs text-[#1E1C19]">
-                  Let's set up your player identity. Scouts filter players by position and region.
+              <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-[#E5E7EB] flex items-center gap-3 mb-2">
+                <User className="w-5 h-5 text-[#16A34A]" />
+                <p className="text-xs text-[#111827]">
+                  Set up your player identity. Scouts filter players by position and region.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Full Name</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Full Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Shahzaib Ahmed"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[#8C8577]/30 bg-white text-sm text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F]"
+                  className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] focus:ring-1 focus:ring-[#16A34A]"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Age</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Age</label>
                   <input
                     type="number"
                     min="12"
                     max="45"
                     value={age}
                     onChange={(e) => setAge(parseInt(e.target.value) || 18)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#8C8577]/30 bg-white text-sm text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F]"
+                    className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] focus:ring-1 focus:ring-[#16A34A]"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Position</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Position</label>
                   <select
                     value={position}
                     onChange={(e) => setPosition(e.target.value as Position)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#8C8577]/30 bg-white text-sm text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F] capitalize"
+                    className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] capitalize"
                   >
                     <option value="goalkeeper">Goalkeeper</option>
                     <option value="defender">Defender</option>
@@ -228,11 +228,11 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">City / Region</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">City / Region</label>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#8C8577]/30 bg-white text-sm text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F]"
+                    className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A]"
                   >
                     {CITIES.map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -241,11 +241,11 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Preferred Foot</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Preferred Foot</label>
                   <select
                     value={preferredFoot}
                     onChange={(e) => setPreferredFoot(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#8C8577]/30 bg-white text-sm text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F]"
+                    className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A]"
                   >
                     <option value="Right">Right</option>
                     <option value="Left">Left</option>
@@ -254,12 +254,12 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4 flex items-center justify-between border-t border-[#8C8577]/20">
+              <div className="pt-4 flex items-center justify-between border-t border-[#E5E7EB]">
                 {onCancel && (
                   <button
                     type="button"
                     onClick={onCancel}
-                    className="text-xs text-[#8C8577] hover:text-[#1E1C19] font-medium"
+                    className="text-xs text-[#6B7280] hover:text-[#111827] font-medium cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -267,7 +267,7 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
                 <button
                   type="submit"
                   id="btn-talent-step1-next"
-                  className="ml-auto flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#2D5D3F] text-[#F6F1E7] text-xs font-semibold hover:bg-[#234932] shadow-xs transition-all"
+                  className="ml-auto flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-[#15803D] shadow-xs transition-all cursor-pointer"
                 >
                   <span>Continue to Match Stats</span>
                   <ArrowRight className="w-4 h-4" />
@@ -279,87 +279,87 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
           {/* STEP 2: Seed Match Stats */}
           {step === 2 && (
             <form onSubmit={handleGenerateFirstReport} className="space-y-4">
-              <div className="bg-[#C9862E]/10 border border-[#C9862E]/30 p-3.5 rounded-xl flex items-center gap-3 mb-2">
-                <Activity className="w-5 h-5 text-[#C9862E]" />
-                <p className="text-xs text-[#1E1C19]">
+              <div className="bg-[#D97706]/10 border border-[#D97706]/30 p-3.5 rounded-xl flex items-center gap-3 mb-2">
+                <Activity className="w-5 h-5 text-[#D97706]" />
+                <p className="text-xs text-[#111827]">
                   Log your most recent match performance. Gemini AI will convert this into your initial professional scouting report.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Opponent Club / Tournament</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Opponent Club / Tournament</label>
                 <input
                   type="text"
                   placeholder="e.g. Model Town FC"
                   value={opponent}
                   onChange={(e) => setOpponent(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-[#8C8577]/30 bg-white text-sm text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F]"
+                  className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] focus:ring-1 focus:ring-[#16A34A]"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3 p-4 bg-white/80 rounded-xl border border-[#8C8577]/20">
+              <div className="grid grid-cols-3 gap-3 p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Goals</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Goals</label>
                   <input
                     type="number"
                     min="0"
                     value={goals}
                     onChange={(e) => setGoals(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full px-3 py-2 rounded-lg border border-[#8C8577]/30 bg-white text-center font-bold text-base text-[#2D5D3F]"
+                    className="w-full px-3 h-10 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-base text-[#16A34A] focus:outline-none focus:border-[#16A34A]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Assists</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Assists</label>
                   <input
                     type="number"
                     min="0"
                     value={assists}
                     onChange={(e) => setAssists(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full px-3 py-2 rounded-lg border border-[#8C8577]/30 bg-white text-center font-bold text-base text-[#C9862E]"
+                    className="w-full px-3 h-10 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-base text-[#D97706] focus:outline-none focus:border-[#16A34A]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Minutes</label>
+                  <label className="block text-xs font-semibold text-[#111827] mb-1">Minutes</label>
                   <input
                     type="number"
                     min="1"
                     max="120"
                     value={minutesPlayed}
                     onChange={(e) => setMinutesPlayed(Math.max(1, parseInt(e.target.value) || 0))}
-                    className="w-full px-3 py-2 rounded-lg border border-[#8C8577]/30 bg-white text-center font-bold text-base text-[#1E1C19]"
+                    className="w-full px-3 h-10 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-base text-[#111827] focus:outline-none focus:border-[#16A34A]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#1E1C19] mb-1">Match Notes & Tactical Context</label>
+                <label className="block text-xs font-semibold text-[#111827] mb-1">Match Notes & Tactical Context</label>
                 <textarea
                   rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Describe your role, key moments, team result, etc."
-                  className="w-full p-3 rounded-lg border border-[#8C8577]/30 bg-white text-xs text-[#1E1C19] focus:outline-hidden focus:border-[#2D5D3F]"
+                  className="w-full p-3.5 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] focus:ring-1 focus:ring-[#16A34A]"
                   required
                 />
               </div>
 
-              <div className="pt-4 flex items-center justify-between border-t border-[#8C8577]/20">
+              <div className="pt-4 flex items-center justify-between border-t border-[#E5E7EB]">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="text-xs text-[#8C8577] hover:text-[#1E1C19] font-medium"
+                  className="text-xs text-[#6B7280] hover:text-[#111827] font-medium cursor-pointer"
                 >
                   Back
                 </button>
                 <button
                   type="submit"
                   id="btn-generate-initial-report"
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#2D5D3F] text-[#F6F1E7] text-xs font-semibold hover:bg-[#234932] shadow-xs transition-all"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-[#15803D] shadow-xs transition-all cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-[#C9862E]" />
+                  <Sparkles className="w-4 h-4 text-[#FEF08A]" />
                   <span>Generate AI Scouting Report</span>
                 </button>
               </div>
@@ -370,11 +370,11 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
           {step === 3 && (
             <div className="space-y-5">
               <div className="text-center pb-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2D5D3F]/10 text-[#2D5D3F] text-xs font-bold mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-[#C9862E]" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-xs font-bold mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
                   <span>Your Initial Scouting Dossier</span>
                 </span>
-                <h3 className="font-serif-heading text-2xl font-bold text-[#1E1C19]">
+                <h3 className="font-sans text-2xl font-bold text-[#111827]">
                   Scout Analysis Revealed
                 </h3>
               </div>
@@ -393,7 +393,7 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
                     type="button"
                     onClick={handleFinishOnboarding}
                     id="btn-finish-talent-onboarding"
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#2D5D3F] text-[#F6F1E7] text-sm font-bold hover:bg-[#234932] shadow-md transition-all active:scale-98"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#16A34A] text-white text-sm font-bold hover:bg-[#15803D] shadow-sm transition-all active:scale-98 cursor-pointer"
                   >
                     <span>Enter Player Dashboard</span>
                     <CheckCircle2 className="w-4 h-4" />

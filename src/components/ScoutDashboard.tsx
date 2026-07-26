@@ -70,47 +70,47 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8 animate-fade-in">
       
       {/* Scout Header Banner */}
-      <div className="rounded-2xl bg-[#C9862E] text-[#1E1C19] p-6 lg:p-8 shadow-md border-2 border-[#C9862E] flex flex-wrap items-center justify-between gap-6">
+      <div className="rounded-3xl bg-[#D97706] text-white p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-wrap items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded bg-black/10 text-[#1E1C19] font-bold">
+            <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
               {scoutProfile.organization || 'Official Scout'}
             </span>
-            <span className="text-xs font-semibold text-[#1E1C19]/80 flex items-center gap-1">
+            <span className="text-xs font-semibold text-white/90 flex items-center gap-1">
               <Shield className="w-3.5 h-3.5" />
               Scout Discovery Mode
             </span>
           </div>
-          <h1 className="font-serif-heading text-3xl font-bold text-[#1E1C19]">
-            {scoutProfile.name}
+          <h1 className="font-sans text-3xl font-bold text-white">
+            Welcome back, {scoutProfile.name}
           </h1>
-          <p className="text-xs text-[#1E1C19]/80 mt-1 max-w-xl">
-            Review AI scouting reports, compare match logs, and shortlist local amateur prospects across Pakistan.
+          <p className="text-xs text-white/90 mt-1 max-w-xl">
+            {talents.length} players match your scouting criteria. Review AI scouting reports, compare match logs, and shortlist local talent.
           </p>
         </div>
 
         {/* Shortlist Counter Badge */}
         <div className="flex items-center gap-3">
-          <div className="bg-[#1E1C19] text-[#F6F1E7] p-4 rounded-xl text-center min-w-32">
-            <span className="text-[10px] font-mono uppercase text-[#C9862E] font-bold block">Shortlisted</span>
-            <span className="font-serif-heading text-2xl font-bold">{shortlists.length} Players</span>
+          <div className="bg-[#111827] text-white p-4 rounded-2xl text-center min-w-32 shadow-xs">
+            <span className="text-[10px] font-mono uppercase text-[#D97706] font-bold block">Shortlisted</span>
+            <span className="font-sans text-2xl font-bold text-white">{shortlists.length} Players</span>
           </div>
         </div>
       </div>
 
       {/* Tabs & Search Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-[#8C8577]/20 shadow-xs space-y-4">
+      <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-xs space-y-4">
         
         {/* Top Tab Bar: Talent Feed vs My Shortlist */}
-        <div className="flex items-center justify-between border-b border-[#8C8577]/20 pb-3">
+        <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
           <div className="flex items-center gap-2">
             <button
               onClick={() => onTabChange('feed')}
               id="btn-tab-talent-feed"
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'feed'
-                  ? 'bg-[#2D5D3F] text-[#F6F1E7]'
-                  : 'text-[#8C8577] hover:text-[#1E1C19] hover:bg-black/5'
+                  ? 'bg-[#16A34A] text-white'
+                  : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F1F5F9]'
               }`}
             >
               All Talent Feed ({talents.length})
@@ -119,10 +119,10 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             <button
               onClick={() => onTabChange('shortlist')}
               id="btn-tab-my-shortlist"
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'shortlist'
-                  ? 'bg-[#C9862E] text-[#1E1C19]'
-                  : 'text-[#8C8577] hover:text-[#1E1C19] hover:bg-black/5'
+                  ? 'bg-[#D97706] text-white'
+                  : 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F1F5F9]'
               }`}
             >
               <BookmarkCheck className="w-3.5 h-3.5" />
@@ -130,7 +130,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             </button>
           </div>
 
-          <span className="text-xs text-[#8C8577] hidden sm:inline">
+          <span className="text-xs text-[#6B7280] hidden sm:inline">
             Showing {filteredTalents.length} candidates
           </span>
         </div>
@@ -140,13 +140,13 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
           
           {/* Search Input */}
           <div className="relative">
-            <Search className="w-4 h-4 text-[#8C8577] absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-[#6B7280] absolute left-3.5 top-3.5" />
             <input
               type="text"
               placeholder="Search by player name or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#8C8577]/30 bg-[#F6F1E7]/50 text-xs text-[#1E1C19] focus:outline-hidden focus:border-[#C9862E]"
+              className="w-full pl-10 pr-3 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] focus:ring-1 focus:ring-[#16A34A]"
             />
           </div>
 
@@ -155,7 +155,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             <select
               value={selectedPosition}
               onChange={(e) => setSelectedPosition(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl border border-[#8C8577]/30 bg-[#F6F1E7]/50 text-xs text-[#1E1C19] focus:outline-hidden focus:border-[#C9862E] capitalize"
+              className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A] capitalize"
             >
               {POSITIONS.map((p) => (
                 <option key={p.value} value={p.value}>{p.label}</option>
@@ -168,7 +168,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-[#8C8577]/30 bg-[#F6F1E7]/50 text-xs text-[#1E1C19] focus:outline-hidden focus:border-[#C9862E]"
+              className="w-full px-3.5 h-11 rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] text-xs text-[#111827] focus:outline-none focus:border-[#16A34A]"
             >
               {CITIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -182,9 +182,9 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
 
       {/* Talent Cards Grid */}
       {filteredTalents.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl border border-dashed border-[#8C8577]/30 text-center">
-          <p className="font-serif-heading text-xl font-bold text-[#1E1C19]">No Talent Profiles Found</p>
-          <p className="text-xs text-[#8C8577] mt-1 mb-4">Try clearing filters or search queries to view all regional players.</p>
+        <div className="bg-white p-12 rounded-2xl border border-dashed border-[#E5E7EB] text-center">
+          <p className="font-sans text-xl font-bold text-[#111827]">No Talent Profiles Found</p>
+          <p className="text-xs text-[#6B7280] mt-1 mb-4">Try clearing filters or search queries to view all regional players.</p>
           <button
             onClick={() => {
               setSearchQuery('');
@@ -192,7 +192,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
               setSelectedCity('All Cities');
               onTabChange('feed');
             }}
-            className="px-4 py-2 rounded-lg bg-[#2D5D3F] text-white text-xs font-bold"
+            className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-bold cursor-pointer hover:bg-[#15803D]"
           >
             Reset Filters
           </button>
@@ -208,29 +208,29 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             return (
               <div
                 key={talent.id}
-                className="bg-white rounded-2xl border-2 border-[#1E1C19]/10 hover:border-[#2D5D3F] transition-all shadow-xs p-6 flex flex-col justify-between group relative"
+                className="bg-white rounded-2xl border border-[#E5E7EB] hover:border-[#16A34A]/50 transition-all shadow-xs p-6 flex flex-col justify-between group relative hover:-translate-y-0.5"
               >
                 <div>
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-[#2D5D3F] text-[#F6F1E7] flex items-center justify-center font-serif-heading font-bold text-lg">
+                      <div className="w-12 h-12 rounded-2xl bg-[#16A34A] text-white flex items-center justify-center font-sans font-bold text-lg shadow-xs">
                         {talent.name.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.2 rounded bg-[#2D5D3F]/10 text-[#2D5D3F] font-bold">
+                          <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#16A34A]/10 text-[#16A34A] font-bold">
                             {talent.position}
                           </span>
-                          <span className="text-[11px] text-[#8C8577] font-semibold">
+                          <span className="text-[11px] text-[#6B7280] font-semibold">
                             {talent.age} yrs
                           </span>
                         </div>
-                        <h3 className="font-serif-heading font-bold text-lg text-[#1E1C19] group-hover:text-[#2D5D3F] transition-colors leading-tight">
+                        <h3 className="font-sans font-bold text-lg text-[#111827] group-hover:text-[#16A34A] transition-colors leading-tight">
                           {talent.name}
                         </h3>
-                        <p className="text-xs text-[#8C8577] flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3 text-[#C9862E]" />
+                        <p className="text-xs text-[#6B7280] flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-[#D97706]" />
                           {talent.city}
                         </p>
                       </div>
@@ -241,10 +241,10 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
                       onClick={() => onToggleShortlist(talent.id)}
                       title={isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'}
                       id={`btn-shortlist-${talent.id}`}
-                      className={`p-2 rounded-xl border transition-all ${
+                      className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                         isShortlisted
-                          ? 'bg-[#C9862E] text-white border-[#C9862E]'
-                          : 'bg-[#F6F1E7] text-[#8C8577] border-[#8C8577]/30 hover:border-[#C9862E] hover:text-[#C9862E]'
+                          ? 'bg-[#D97706] text-white border-[#D97706]'
+                          : 'bg-[#F8FAFC] text-[#6B7280] border-[#E5E7EB] hover:border-[#D97706] hover:text-[#D97706]'
                       }`}
                     >
                       <BookmarkCheck className="w-4 h-4" />
@@ -252,46 +252,60 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
                   </div>
 
                   {/* Quick Stat Chips */}
-                  <div className="grid grid-cols-3 gap-2 p-3 bg-[#F6F1E7] rounded-xl text-center mb-4">
+                  <div className="grid grid-cols-3 gap-2 p-3 bg-[#F8FAFC] rounded-xl text-center mb-4 border border-[#E5E7EB]">
                     <div>
-                      <span className="text-[9px] font-mono text-[#8C8577] uppercase block">Matches</span>
-                      <span className="font-serif-heading text-xs font-bold text-[#1E1C19]">{talent.matches.length}</span>
+                      <span className="text-[9px] font-mono text-[#6B7280] uppercase block">Matches</span>
+                      <span className="font-sans text-xs font-bold text-[#111827]">{talent.matches.length}</span>
                     </div>
                     <div>
-                      <span className="text-[9px] font-mono text-[#8C8577] uppercase block">G / A</span>
-                      <span className="font-serif-heading text-xs font-bold text-[#2D5D3F]">{totalGoals}G • {totalAssists}A</span>
+                      <span className="text-[9px] font-mono text-[#6B7280] uppercase block">G / A</span>
+                      <span className="font-sans text-xs font-bold text-[#16A34A]">{totalGoals}G • {totalAssists}A</span>
                     </div>
                     <div>
-                      <span className="text-[9px] font-mono text-[#8C8577] uppercase block">Minutes</span>
-                      <span className="font-serif-heading text-xs font-bold text-[#1E1C19]">{totalMinutes}'</span>
+                      <span className="text-[9px] font-mono text-[#6B7280] uppercase block">Minutes</span>
+                      <span className="font-sans text-xs font-bold text-[#111827]">{totalMinutes}'</span>
                     </div>
                   </div>
 
                   {/* AI Scouting Report Snippet */}
                   {talent.latestReport ? (
-                    <div className="p-3.5 bg-white/80 rounded-xl border border-[#2D5D3F]/20 mb-4">
-                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#2D5D3F] font-bold mb-1">
-                        <Sparkles className="w-3 h-3 text-[#C9862E]" />
+                    <div className="p-3.5 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] mb-4">
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#16A34A] font-bold mb-1">
+                        <Sparkles className="w-3 h-3 text-[#D97706]" />
                         <span>AI Scout Verdict</span>
                       </div>
-                      <p className="text-xs text-[#1E1C19] font-medium line-clamp-2 italic">
+                      <p className="text-xs text-[#111827] font-medium line-clamp-2 italic">
                         "{talent.latestReport.verdict}"
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-[#8C8577] italic mb-4">No report generated yet.</p>
+                    <p className="text-xs text-[#6B7280] italic mb-4">No report generated yet.</p>
                   )}
                 </div>
 
-                {/* Footer Action: View Full Profile */}
-                <button
-                  onClick={() => setSelectedTalent(talent)}
-                  id={`btn-view-dossier-${talent.id}`}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#1E1C19] text-[#F6F1E7] hover:bg-[#2D5D3F] text-xs font-bold transition-all"
-                >
-                  <span>View Full Scouting Dossier</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
+                {/* Footer Action: View Full Profile & Shortlist */}
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <button
+                    onClick={() => setSelectedTalent(talent)}
+                    id={`btn-view-dossier-${talent.id}`}
+                    className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#111827] text-white hover:bg-[#16A34A] text-xs font-bold transition-all cursor-pointer"
+                  >
+                    <span>View Profile</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => onToggleShortlist(talent.id)}
+                    className={`w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      isShortlisted
+                        ? 'bg-[#D97706] text-white border-[#D97706]'
+                        : 'bg-white text-[#D97706] border-[#D97706] hover:bg-[#D97706] hover:text-white'
+                    }`}
+                  >
+                    <BookmarkCheck className="w-3.5 h-3.5" />
+                    <span>{isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
+                  </button>
+                </div>
 
               </div>
             );
