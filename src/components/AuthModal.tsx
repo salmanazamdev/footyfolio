@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase/client';
 import { isSupabaseConfigured, selectUserRole } from '../lib/supabase/helpers';
 import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X } from 'lucide-react';
@@ -22,6 +22,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [role, setRole] = useState<'talent' | 'scout'>(initialRole);
+  
+  // Sync state when modal is opened or props change
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setRole(initialRole);
+      setErrorMessage(null);
+    }
+  }, [isOpen, initialMode, initialRole]);
   
   // Form State
   const [fullName, setFullName] = useState('');
