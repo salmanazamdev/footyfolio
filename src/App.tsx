@@ -12,7 +12,7 @@ import { ScoutOnboardingModal } from './components/ScoutOnboardingModal';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 import { AuthModal } from './components/AuthModal';
 import { createClient } from './lib/supabase/client';
-import { isSupabaseConfigured, getUserProfile } from './lib/supabase/helpers';
+import { isSupabaseConfigured, getUserProfile, getTalentsFeedForScout } from './lib/supabase/helpers';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
@@ -55,8 +55,15 @@ export default function App() {
       setShortlists(StorageEngine.getShortlists(loadedScouts[0].id));
     }
 
-    // Check Supabase Auth state if configured
+    // Check Supabase Auth state & load talents from Supabase if configured
     if (isSupabaseConfigured()) {
+      getTalentsFeedForScout().then((dbTalents) => {
+        if (dbTalents && dbTalents.length > 0) {
+          setTalents(dbTalents);
+          setActiveTalentId(dbTalents[0].id);
+        }
+      });
+
       const supabase = createClient();
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
