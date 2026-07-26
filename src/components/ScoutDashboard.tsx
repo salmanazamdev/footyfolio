@@ -198,7 +198,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredTalents.map((talent) => {
             const isShortlisted = shortlistedTalentIds.has(talent.id);
             const totalGoals = talent.matches.reduce((acc, m) => acc + (m.goals || 0), 0);
@@ -208,7 +208,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
             return (
               <div
                 key={talent.id}
-                className="bg-white rounded-2xl border border-[#E5E7EB] hover:border-[#16A34A]/50 transition-all shadow-xs p-6 flex flex-col justify-between group relative hover:-translate-y-0.5"
+                className="bg-white rounded-2xl border border-[#E5E7EB] hover:border-[#16A34A]/50 transition-all shadow-xs p-4 sm:p-6 flex flex-col justify-between group relative hover:-translate-y-0.5"
               >
                 <div>
                   {/* Card Header */}

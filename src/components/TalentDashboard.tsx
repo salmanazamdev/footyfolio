@@ -137,10 +137,10 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
       </div>
 
       {/* Main Grid: AI Report + Shortlist Scouts */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         
         {/* Left 2 Cols: AI Scouting Report & Matches */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
           
           {/* Prominent Scouting Report */}
           <div>
