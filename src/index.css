@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pitch: #2D5D3F;
+  --color-chalk: #F6F1E7;
+  --color-clay: #C9862E;
+  --color-charcoal: #1E1C19;
+  --color-stone: #8C8577;
+
+  --font-serif: "Bitter", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F6F1E7;
+  color: #1E1C19;
+}
+
+h1, h2, h3, h4, .font-serif-heading {
+  font-family: "Bitter", Georgia, serif;
+}

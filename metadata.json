@@ -1,0 +1,6 @@
+{
+  "name": "FootyFolio",
+  "description": "Amateur football scouting platform with AI scouting reports connecting players and scouts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
