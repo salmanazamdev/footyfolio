@@ -398,6 +398,20 @@ export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
   }
 }
 
+// Fetch Profile for user ID
+export async function getUserProfile(userId: string): Promise<{ profile: any; details?: any } | null> {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = createClient();
+  try {
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (!profile) return null;
+    const { data: details } = await supabase.from('talent_details').select('*').eq('profile_id', userId).single();
+    return { profile, details };
+  } catch (err) {
+    return null;
+  }
+}
+
 // 10. Fetch Scout Preferences
 export async function getScoutPreferences(userId: string): Promise<ScoutProfile | null> {
   if (!isSupabaseConfigured()) {

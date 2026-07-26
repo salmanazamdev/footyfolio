@@ -3,9 +3,10 @@ import { UserCheck, Shield, Sparkles, ArrowRight, Activity, Award, Search, Check
 
 interface LandingHeroProps {
   onSelectRole: (role: 'talent' | 'scout') => void;
+  onOpenAuth?: (mode: 'signin' | 'signup', role?: 'talent' | 'scout') => void;
 }
 
-export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole }) => {
+export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAuth }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12 animate-fade-in">
       <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -30,24 +31,41 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole }) => {
           </div>
 
           {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 max-w-lg">
-            <button
-              onClick={() => onSelectRole('talent')}
-              id="btn-landing-player"
-              className="flex-1 flex items-center justify-between px-6 py-4 rounded-xl bg-[#16A34A] text-white font-sans font-bold text-lg hover:bg-[#15803D] shadow-sm transition-all active:scale-[0.98] group cursor-pointer"
-            >
-              <span>I'm a player</span>
-              <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
-            </button>
+          <div className="space-y-3 max-w-lg">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => onOpenAuth ? onOpenAuth('signup', 'talent') : onSelectRole('talent')}
+                id="btn-landing-player"
+                className="flex-1 flex items-center justify-between px-6 py-4 rounded-xl bg-[#16A34A] text-white font-sans font-bold text-lg hover:bg-[#15803D] shadow-sm transition-all active:scale-[0.98] group cursor-pointer"
+              >
+                <span>I'm a player</span>
+                <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+              </button>
 
-            <button
-              onClick={() => onSelectRole('scout')}
-              id="btn-landing-scout"
-              className="flex-1 flex items-center justify-between px-6 py-4 rounded-xl bg-[#D97706] text-white font-sans font-bold text-lg hover:bg-[#B45309] shadow-sm transition-all active:scale-[0.98] group cursor-pointer"
-            >
-              <span>I'm a scout</span>
-              <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
-            </button>
+              <button
+                onClick={() => onOpenAuth ? onOpenAuth('signup', 'scout') : onSelectRole('scout')}
+                id="btn-landing-scout"
+                className="flex-1 flex items-center justify-between px-6 py-4 rounded-xl bg-[#D97706] text-white font-sans font-bold text-lg hover:bg-[#B45309] shadow-sm transition-all active:scale-[0.98] group cursor-pointer"
+              >
+                <span>I'm a scout</span>
+                <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            {onOpenAuth && (
+              <div className="text-center sm:text-left pt-1">
+                <p className="text-xs text-[#6B7280]">
+                  Already registered?{' '}
+                  <button
+                    onClick={() => onOpenAuth('signin')}
+                    id="btn-landing-signin-link"
+                    className="text-[#16A34A] font-bold hover:underline cursor-pointer"
+                  >
+                    Sign in to your account →
+                  </button>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Stats Ticker Row */}

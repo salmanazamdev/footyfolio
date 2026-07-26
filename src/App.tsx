@@ -10,9 +10,13 @@ import { ScoutDashboard } from './components/ScoutDashboard';
 import { TalentOnboardingModal } from './components/TalentOnboardingModal';
 import { ScoutOnboardingModal } from './components/ScoutOnboardingModal';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
+import { AuthModal } from './components/AuthModal';
+import { createClient } from './lib/supabase/client';
+import { isSupabaseConfigured, getUserProfile } from './lib/supabase/helpers';
 
 export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
   
   // Data State
   const [talents, setTalents] = useState<TalentProfile[]>([]);
@@ -27,11 +31,15 @@ export default function App() {
   const [scoutTab, setScoutTab] = useState<'feed' | 'shortlist'>('feed');
 
   // Modals
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [authRole, setAuthRole] = useState<'talent' | 'scout'>('talent');
+
   const [isTalentOnboardingOpen, setIsTalentOnboardingOpen] = useState(false);
   const [isScoutOnboardingOpen, setIsScoutOnboardingOpen] = useState(false);
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
 
-  // Initialize storage
+  // Initialize storage & check Supabase Auth Session
   useEffect(() => {
     const loadedTalents = StorageEngine.getTalentProfiles();
     const loadedScouts = StorageEngine.getScoutProfiles();
@@ -46,7 +54,75 @@ export default function App() {
       setActiveScoutId(loadedScouts[0].id);
       setShortlists(StorageEngine.getShortlists(loadedScouts[0].id));
     }
+
+    // Check Supabase Auth state if configured
+    if (isSupabaseConfigured()) {
+      const supabase = createClient();
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setCurrentUser(session.user);
+          loadProfileForUser(session.user);
+        }
+      });
+
+      const { data: authListener } = supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          if (session?.user) {
+            setCurrentUser(session.user);
+            loadProfileForUser(session.user);
+          } else {
+            setCurrentUser(null);
+          }
+        }
+      );
+
+      return () => {
+        authListener?.subscription.unsubscribe();
+      };
+    }
   }, []);
+
+  // Helper to load profile for an authenticated user
+  const loadProfileForUser = async (user: any) => {
+    const userRole = user.user_metadata?.role || 'talent';
+    setCurrentRole(userRole as UserRole);
+
+    try {
+      const profileData = await getUserProfile(user.id);
+      if (profileData?.profile) {
+        if (userRole === 'talent' && profileData.details) {
+          const tProfile: TalentProfile = {
+            id: user.id,
+            userId: user.id,
+            name: profileData.profile.full_name || 'Player',
+            avatarUrl: profileData.profile.avatar_url || 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=250',
+            age: profileData.details.age || 18,
+            position: profileData.details.primary_position || 'midfielder',
+            city: profileData.details.city || 'Lahore',
+            preferredFoot: profileData.details.preferred_foot || 'right',
+            bio: profileData.details.bio || '',
+            matches: [],
+            latestReport: undefined,
+            shortlistedBy: [],
+            createdAt: new Date().toISOString(),
+          };
+          
+          const updatedTalents = StorageEngine.saveTalentProfile(tProfile);
+          setTalents(updatedTalents);
+          setActiveTalentId(tProfile.id);
+        }
+      } else if (!profileData) {
+        // If profile doesn't exist, prompt onboarding modal
+        if (userRole === 'talent') {
+          setIsTalentOnboardingOpen(true);
+        } else {
+          setIsScoutOnboardingOpen(true);
+        }
+      }
+    } catch (e) {
+      console.log('Error fetching DB profile:', e);
+    }
+  };
 
   // Update shortlists when active scout changes or when toggled
   useEffect(() => {
@@ -55,11 +131,50 @@ export default function App() {
     }
   }, [activeScoutId]);
 
+  // Open Auth Modal
+  const handleOpenAuth = (mode: 'signin' | 'signup' = 'signin', role: 'talent' | 'scout' = 'talent') => {
+    setAuthMode(mode);
+    setAuthRole(role);
+    setIsAuthOpen(true);
+  };
+
+  // Auth Success Handler
+  const handleAuthSuccess = (user: any, role: 'talent' | 'scout') => {
+    setCurrentUser(user);
+    setCurrentRole(role);
+    
+    if (role === 'talent') {
+      const existing = talents.find((t) => t.id === user.id);
+      if (existing) {
+        setActiveTalentId(existing.id);
+      } else {
+        // Open onboarding to complete profile
+        setIsTalentOnboardingOpen(true);
+      }
+    } else {
+      const existing = scouts.find((s) => s.id === user.id);
+      if (existing) {
+        setActiveScoutId(existing.id);
+      } else {
+        setIsScoutOnboardingOpen(true);
+      }
+    }
+  };
+
+  // Handle Logout
+  const handleLogout = async () => {
+    if (isSupabaseConfigured()) {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
+    setCurrentUser(null);
+    setCurrentRole(null);
+  };
+
   // Handle role selection from landing or switch
   const handleSelectRole = (role: UserRole) => {
     setCurrentRole(role);
     if (role === 'talent') {
-      // Check if we need onboarding
       if (talents.length === 0) {
         setIsTalentOnboardingOpen(true);
       }
@@ -122,6 +237,7 @@ export default function App() {
         currentRole={currentRole}
         activeTalentName={activeTalent?.name}
         activeScoutName={activeScout?.name}
+        userEmail={currentUser?.email}
         onSwitchRole={handleSwitchRole}
         onOpenSchemaModal={() => setIsSchemaModalOpen(true)}
         shortlistCount={shortlists.length}
@@ -130,6 +246,8 @@ export default function App() {
           setScoutTab('shortlist');
         }}
         activeTab={scoutTab}
+        onOpenAuth={handleOpenAuth}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Body */}
@@ -138,13 +256,8 @@ export default function App() {
         {/* LANDING / ROLE SELECTION */}
         {currentRole === null && (
           <LandingHero
-            onSelectRole={(role) => {
-              if (role === 'talent') {
-                setIsTalentOnboardingOpen(true);
-              } else {
-                setIsScoutOnboardingOpen(true);
-              }
-            }}
+            onSelectRole={(role) => handleOpenAuth('signup', role)}
+            onOpenAuth={handleOpenAuth}
           />
         )}
 
@@ -183,7 +296,7 @@ export default function App() {
 
           <button
             onClick={() => setIsSchemaModalOpen(true)}
-            className="hover:text-[#1E1C19] underline font-medium"
+            className="hover:text-[#1E1C19] underline font-medium cursor-pointer"
           >
             Supabase Postgres Schema & API Docs
           </button>
@@ -191,6 +304,14 @@ export default function App() {
       </footer>
 
       {/* Modals */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        initialMode={authMode}
+        initialRole={authRole}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
+
       <TalentOnboardingModal
         isOpen={isTalentOnboardingOpen}
         onComplete={handleTalentOnboardingComplete}
@@ -211,3 +332,4 @@ export default function App() {
     </div>
   );
 }
+
