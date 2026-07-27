@@ -207,9 +207,21 @@ export default function OnboardingPage() {
     setSavingStep(true);
 
     try {
+      if (userId) {
+        try {
+          await saveScoutPreferences(userId, {
+            name: fullName,
+            city: scoutCity,
+            positions: selectedPositions,
+          });
+        } catch (e) {
+          console.warn('Scout basics save warning:', e);
+        }
+      }
       setCurrentStep(2);
     } catch (err: any) {
-      setErrorMessage('Failed to proceed.');
+      console.error('Error in scout basics submit:', err);
+      setCurrentStep(2);
     } finally {
       setSavingStep(false);
     }
@@ -782,10 +794,19 @@ export default function OnboardingPage() {
                   <button
                     type="submit"
                     disabled={savingStep}
-                    className="flex items-center gap-2 bg-[#D97706] text-white hover:bg-[#B45309] px-6 py-2.5 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer"
+                    className="flex items-center gap-2 bg-[#D97706] text-white hover:bg-[#B45309] px-6 py-2.5 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer disabled:opacity-50"
                   >
-                    <span>Configure Search Filters</span>
-                    <ArrowRight className="w-4 h-4" />
+                    {savingStep ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Configure Search Filters</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

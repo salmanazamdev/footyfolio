@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TalentProfile, ScoutProfile, Position, ShortlistItem } from '../types';
-import { Search, Filter, MapPin, Award, BookmarkCheck, ArrowUpRight, Shield, Check, Sparkles, Footprints } from 'lucide-react';
+import { Search, Filter, MapPin, Award, BookmarkCheck, ArrowUpRight, Shield, Check, ShieldCheck, Footprints } from 'lucide-react';
 import { TalentDetailModal } from './TalentDetailModal';
 
 interface ScoutDashboardProps {
@@ -270,9 +270,9 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
                   {/* AI Scouting Report Snippet */}
                   {talent.latestReport ? (
                     <div className="p-3.5 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB] mb-4">
-                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[#16A34A] font-bold mb-1">
-                        <Sparkles className="w-3 h-3 text-[#D97706]" />
-                        <span>AI Scout Verdict</span>
+                      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-700 font-bold mb-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Tactical Evaluation</span>
                       </div>
                       <p className="text-xs text-[#111827] font-medium line-clamp-2 italic">
                         "{talent.latestReport.verdict}"
