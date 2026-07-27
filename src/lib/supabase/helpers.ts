@@ -67,12 +67,24 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
 }
 
 // 2. Select initial role during onboarding
-export async function selectUserRole(userId: string, role: 'talent' | 'scout') {
+export async function selectUserRole(userId: string, role: 'talent' | 'scout', name?: string, avatarUrl?: string) {
   const supabase = createClient();
+  
+  // First check if profile already exists
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id, name, avatar_url')
+    .eq('id', userId)
+    .single();
+
   const { error } = await supabase
     .from('profiles')
-    .update({ role })
-    .eq('id', userId);
+    .upsert({
+      id: userId,
+      role,
+      name: existing?.name || name || 'FootyFolio User',
+      avatar_url: existing?.avatar_url || avatarUrl || null,
+    }, { onConflict: 'id' });
 
   if (error) {
     console.error('Error setting role:', error);
@@ -84,15 +96,16 @@ export async function selectUserRole(userId: string, role: 'talent' | 'scout') {
 export async function saveTalentBasics(userId: string, data: { name: string; age: number; position: string; city: string }) {
   const supabase = createClient();
 
-  // Update profile
+  // Upsert profile
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({
+    .upsert({
+      id: userId,
+      role: 'talent',
       name: data.name,
       age: data.age,
       city: data.city,
-    })
-    .eq('id', userId);
+    }, { onConflict: 'id' });
 
   if (profileError) {
     console.error('Error updating talent profile:', profileError);
@@ -196,14 +209,15 @@ export async function completeOnboarding(userId: string) {
 export async function saveScoutPreferences(userId: string, data: { name: string; city: string; positions: string[] }) {
   const supabase = createClient();
 
-  // Update profile basic info
+  // Upsert profile basic info
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({
+    .upsert({
+      id: userId,
+      role: 'scout',
       name: data.name,
       city: data.city,
-    })
-    .eq('id', userId);
+    }, { onConflict: 'id' });
 
   if (profileError) {
     console.error('Error updating scout profile:', profileError);
