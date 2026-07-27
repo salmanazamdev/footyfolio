@@ -19,7 +19,7 @@ At the same time, talent scouts, academy coaches, and local club directors face 
 
 ## 🌐 Live Application Link
 
-- **Live Deployed URL:** [https://ais-pre-aelgydonkgdwtlbqqfy6jy-719244438296.asia-southeast1.run.app](https://ais-pre-aelgydonkgdwtlbqqfy6jy-719244438296.asia-southeast1.run.app)
+- **Live Deployed URL:** [https://footyfolio.vercel.app](https://footyfolio.vercel.app)
 - **Status:** Live, fully functional, and ready for evaluation.
 
 ---
