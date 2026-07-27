@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserRole } from '../types';
-import { Shield, UserCheck, RefreshCw, Database, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { Shield, UserCheck, RefreshCw, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   currentRole: UserRole | null;
@@ -127,17 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
             </>
           )}
 
-          {/* Schema Info Button */}
-          <button
-            onClick={onOpenSchemaModal}
-            title="Supabase Schema & Environment Info"
-            id="btn-header-schema"
-            className="p-2 rounded-xl text-[#6B7280] hover:text-[#111827] hover:bg-[#F1F5F9] transition-colors cursor-pointer shrink-0"
-          >
-            <Database className="w-4 h-4" />
-          </button>
-
-          {/* Switch Role Button */}
+          {/* Logout Button if Logged In */}
           {currentRole !== null && (
             <button
               onClick={onSwitchRole}

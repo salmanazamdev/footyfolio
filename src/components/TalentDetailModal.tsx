@@ -97,42 +97,35 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
         </div>
 
         {/* Profile Stats Quick Strip */}
-        <div className="shrink-0 grid grid-cols-4 bg-[#16A34A] text-white divide-x divide-white/20 text-center py-2.5 sm:py-3">
+        <div className="shrink-0 grid grid-cols-4 bg-slate-900 text-white divide-x divide-slate-800 text-center py-2.5 sm:py-3 border-t border-b border-slate-800">
           <div>
-            <span className="text-[10px] font-mono text-white/80 uppercase block">Age</span>
-            <span className="font-sans text-xs sm:text-base font-bold">{talent.age} yrs</span>
+            <span className="text-[10px] font-mono text-slate-400 uppercase block tracking-wider">Age</span>
+            <span className="font-sans text-xs sm:text-base font-bold text-white">{talent.age} yrs</span>
           </div>
           <div>
-            <span className="text-[10px] font-mono text-white/80 uppercase block">Matches</span>
-            <span className="font-sans text-xs sm:text-base font-bold">{talent.matches.length}</span>
+            <span className="text-[10px] font-mono text-slate-400 uppercase block tracking-wider">Matches</span>
+            <span className="font-sans text-xs sm:text-base font-bold text-white">{talent.matches.length}</span>
           </div>
           <div>
-            <span className="text-[10px] font-mono text-white/80 uppercase block">G / A</span>
-            <span className="font-sans text-xs sm:text-base font-bold text-[#FEF08A]">{totalGoals} G • {totalAssists} A</span>
+            <span className="text-[10px] font-mono text-slate-400 uppercase block tracking-wider">G / A</span>
+            <span className="font-sans text-xs sm:text-base font-bold text-amber-400">{totalGoals} G • {totalAssists} A</span>
           </div>
           <div>
-            <span className="text-[10px] font-mono text-white/80 uppercase block">Minutes</span>
-            <span className="font-sans text-xs sm:text-base font-bold">{totalMinutes}'</span>
+            <span className="text-[10px] font-mono text-slate-400 uppercase block tracking-wider">Minutes</span>
+            <span className="font-sans text-xs sm:text-base font-bold text-white">{totalMinutes}'</span>
           </div>
         </div>
 
         {/* Modal Main Body (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 bg-slate-50/50">
           
-          {/* AI Scouting Report Section */}
-          <div>
-            <h3 className="text-xs font-mono uppercase tracking-wider text-[#111827] font-bold mb-3 flex items-center gap-2">
-              <Award className="w-4 h-4 text-[#16A34A]" />
-              <span>Full AI Scouting Report</span>
-            </h3>
-
-            <ScoutingReportCard
-              report={talent.latestReport}
-              playerName={talent.name}
-              position={talent.position}
-              showRegenerateButton={false}
-            />
-          </div>
+          {/* Tactical Scouting Dossier Section */}
+          <ScoutingReportCard
+            report={talent.latestReport}
+            playerName={talent.name}
+            position={talent.position}
+            showRegenerateButton={false}
+          />
 
           {/* Match History Logs */}
           <div>

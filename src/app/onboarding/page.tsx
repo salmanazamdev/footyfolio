@@ -274,8 +274,10 @@ export default function OnboardingPage() {
             </span>
             <span className="text-[#D97706] text-2xl font-black leading-none ml-[1px]">.</span>
           </Link>
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
-            Welcome Setup
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
+              Profile Setup
+            </span>
           </div>
         </div>
       </header>
