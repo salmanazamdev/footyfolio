@@ -34,6 +34,7 @@ export default function OnboardingPage() {
 
   // Talent Step 3 State (AI Report)
   const [generatingReport, setGeneratingReport] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const [aiReport, setAiReport] = useState<{ summary: string; strengths: string[]; areasToDevelop: string[]; verdict: string } | null>(null);
 
   // Scout Step State
@@ -186,14 +187,17 @@ export default function OnboardingPage() {
 
   // Complete Talent Onboarding & Go to Dashboard
   const handleFinishTalentOnboarding = async () => {
-    if (userId) {
-      try {
+    setFinishing(true);
+    setErrorMessage(null);
+    try {
+      if (userId) {
         await completeOnboarding(userId);
-      } catch (err) {
-        console.error('Error marking onboarding complete:', err);
       }
+      window.location.href = '/';
+    } catch (err: any) {
+      console.error('Error marking onboarding complete:', err);
+      window.location.href = '/';
     }
-    router.push('/');
   };
 
   // Scout Step 1 Submit
@@ -226,7 +230,7 @@ export default function OnboardingPage() {
         });
         await completeOnboarding(userId);
       }
-      router.push('/');
+      window.location.href = '/';
     } catch (err: any) {
       console.error('Error completing scout onboarding:', err);
       setErrorMessage(err.message || 'Failed to save preferences.');
@@ -654,11 +658,21 @@ export default function OnboardingPage() {
                     <div className="pt-2 flex justify-end">
                       <button
                         type="button"
+                        disabled={finishing}
                         onClick={handleFinishTalentOnboarding}
-                        className="flex items-center gap-2 bg-[#16A34A] text-white hover:bg-[#15803D] px-6 py-3 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer"
+                        className="flex items-center gap-2 bg-[#16A34A] text-white hover:bg-[#15803D] px-6 py-3 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer disabled:opacity-50"
                       >
-                        <span>Go to My Dashboard</span>
-                        <ArrowRight className="w-4 h-4" />
+                        {finishing ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Redirecting to Dashboard...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Go to My Dashboard</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -670,18 +684,20 @@ export default function OnboardingPage() {
                     <div className="flex items-center justify-center gap-3">
                       <button
                         type="button"
+                        disabled={finishing || generatingReport}
                         onClick={generateReportAndFinish}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-[#16A34A] text-white rounded-xl text-xs font-bold"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-[#16A34A] text-white rounded-xl text-xs font-bold cursor-pointer disabled:opacity-50"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         Retry AI Report
                       </button>
                       <button
                         type="button"
+                        disabled={finishing}
                         onClick={handleFinishTalentOnboarding}
-                        className="px-4 py-2 border border-[#E5E7EB] text-[#111827] rounded-xl text-xs font-bold"
+                        className="px-4 py-2 border border-[#E5E7EB] text-[#111827] rounded-xl text-xs font-bold cursor-pointer disabled:opacity-50"
                       >
-                        Skip to Dashboard
+                        {finishing ? 'Redirecting...' : 'Skip to Dashboard'}
                       </button>
                     </div>
                   </div>

@@ -159,7 +159,7 @@ export async function saveTalentBasics(userId: string, data: { name: string; age
         .upsert({
           profile_id: userId,
           position: data.position,
-        });
+        }, { onConflict: 'profile_id' });
     } catch (e) {
       console.warn('Supabase save talent basics failed, updating local state:', e);
     }
@@ -267,10 +267,16 @@ export async function completeOnboarding(userId: string) {
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
-      await supabase
+      const { error } = await supabase
         .from('profiles')
-        .update({ onboarding_completed: true })
-        .eq('id', userId);
+        .upsert({
+          id: userId,
+          onboarding_completed: true,
+        }, { onConflict: 'id' });
+
+      if (error) {
+        console.error('Error completing onboarding in Supabase:', error);
+      }
     } catch (e) {
       console.warn('Supabase complete onboarding failed, updating demo state:', e);
     }
