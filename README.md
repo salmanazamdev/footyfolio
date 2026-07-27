@@ -1,66 +1,70 @@
 <div align="center">
 
+<img src="docs/screenshots/scout-discovery.png" alt="" width="0" height="0" style="display:none">
+
 # 🏟️ FootyFolio
 
-### Get Scouted. Get Seen.
+### *The digital scouting dossier for grassroots football.*
 
-**An AI-powered digital scouting platform for grassroots football players and talent scouts across Pakistan and South Asia.**
+**Turn a match performance into a professional scouting report, in one tap.**
 
-[![Live App](https://img.shields.io/badge/Live%20App-footyfolio.vercel.app-16A34A?style=for-the-badge)](https://footyfolio.vercel.app)
-[![Built with Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
-[![Powered by Gemini](https://img.shields.io/badge/AI-Gemini%203.6%20Flash-4285F4?style=for-the-badge&logo=googlegemini)](https://ai.google.dev)
-[![Database](https://img.shields.io/badge/Database-Supabase-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
+[![Live App](https://img.shields.io/badge/🚀_LIVE_APP-footyfolio.vercel.app-16A34A?style=for-the-badge)](https://footyfolio.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Gemini](https://img.shields.io/badge/AI-Gemini_3.6_Flash-4285F4?style=flat-square&logo=googlegemini&logoColor=white)](https://ai.google.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres_%2B_Auth-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com)
+
+</div>
+
+<br>
+
+> **The problem:** thousands of talented amateur footballers across Pakistan play every week in local leagues and street tournaments, and stay completely invisible to the scouts who could change their career. Scouting stays word-of-mouth, unstructured, and limited to whoever happens to be watching that day.
+>
+> **FootyFolio fixes the visibility problem.** Players log their match stats. AI turns that data into a scouting report a real academy would take seriously. Scouts get a live, filterable feed of local talent instead of relying on luck.
+
+---
+
+## 🌐 Try It Right Now
+
+<div align="center">
+
+### **[→ footyfolio.vercel.app ←](https://footyfolio.vercel.app)**
+
+*Live. Deployed. Fully functional. Sign up as a Player or a Scout and see it work end to end.*
 
 </div>
 
 ---
 
-## 📌 The Problem
-
-Across Pakistan and South Asia, thousands of grassroots football players compete every week in local leagues, street tournaments, and ground matches — with genuine talent going completely unnoticed. There's no centralized way to record performance or build a credible profile.
-
-Meanwhile, scouts and academy coaches struggle to find players outside elite urban clubs. Scouting stays manual, word-of-mouth, and limited to whoever happens to be watching that day.
-
-**FootyFolio** closes that gap: players turn their match stats into a professional, AI-generated scouting report — a digital football CV — and scouts get a real discovery feed to find them.
-
----
-
-## 🌐 Live App
-
-### 👉 [**footyfolio.vercel.app**](https://footyfolio.vercel.app)
-
-Deployed on **Vercel**, fully functional, and ready for evaluation.
-
----
-
-## ✨ Features
+## ✨ What It Does
 
 | | |
 |---|---|
-| 🎽 **Dual-role onboarding** | Choose Player or Scout at signup — each gets a tailored onboarding flow |
-| 📊 **Match performance tracker** | Log goals, assists, minutes played, and match notes per game |
-| 🤖 **AI scouting dossier** | Gemini-generated report: summary, strengths, areas to develop, and a scout's verdict |
-| 🔍 **Scout discovery feed** | Browse and filter talent by position, city, and age |
-| ⭐ **Shortlisting** | Scouts save prospects to a personal shortlist for follow-up |
-| 🔐 **Real authentication** | Supabase email/password + Google OAuth, with persistent sessions |
-| 📱 **Mobile-first design** | Built for the phone-first way most players and scouts will actually use it |
+| 🎽 **Dual-role onboarding** | A tailored first-run flow for Players *and* Scouts — not the same generic signup form |
+| 📊 **Match performance tracker** | Log goals, assists, minutes, and tactical notes after every match |
+| 🤖 **AI scouting dossier** | Gemini turns raw stats into an executive summary, strengths, development areas, and a scout's verdict — structured like a real report, not a chatbot reply |
+| 🔍 **Scout discovery feed** | Browse and filter local talent by position, city, and age |
+| ⭐ **Shortlisting** | Scouts build and revisit a personal shortlist of prospects worth following up on |
+| 🔐 **Real authentication** | Supabase email/password + Google OAuth — persistent sessions, not a demo toggle |
+| 📱 **Mobile-first** | Built for the phone-first way players and scouts actually use it on the ground |
 
 ---
 
-## 🖼️ Screenshots
+## 🖼️ See It In Action
 
 <table>
 <tr>
 <td width="50%">
 
-**Role Selection — Player or Scout**
+**Choose your side of the game**
 <br>
 ![Onboarding screen letting a new user choose Player or Scout mode](docs/screenshots/role-selection.png)
 
 </td>
 <td width="50%">
 
-**Player Profile — Full Match History**
+**A player's full track record**
 <br>
 ![Player profile showing career stats and logged match history](docs/screenshots/player-profile.png)
 
@@ -69,14 +73,14 @@ Deployed on **Vercel**, fully functional, and ready for evaluation.
 <tr>
 <td width="50%">
 
-**Logging a Match**
+**Logging a match takes seconds**
 <br>
 ![Modal for logging match stats and tactical notes](docs/screenshots/log-match.png)
 
 </td>
 <td width="50%">
 
-**AI-Generated Scouting Report**
+**The AI dossier, moments later**
 <br>
 ![AI scouting report with executive summary, strengths, and development areas](docs/screenshots/ai-scouting-report.png)
 
@@ -85,7 +89,7 @@ Deployed on **Vercel**, fully functional, and ready for evaluation.
 <tr>
 <td colspan="2">
 
-**Scout Discovery Feed**
+**A scout's view — real talent, filterable, at a glance**
 <br>
 ![Scout dashboard showing filterable talent cards with tactical evaluations](docs/screenshots/scout-discovery.png)
 
@@ -95,12 +99,14 @@ Deployed on **Vercel**, fully functional, and ready for evaluation.
 
 ---
 
-## 🤖 The AI Feature
+## 🤖 The AI, Explained
 
-Every time a player logs a match, FootyFolio sends their profile and match history to a server-side route (`/api/generate-report`), which calls **Google Gemini 3.6 Flash** with a structured system prompt and a strict JSON response schema — so the output is always well-formed and ready to render, not free-text.
+This isn't "summarize this text" wrapped in a football theme. Every report is generated from a system prompt written specifically to sound like a scout, not an assistant — grounded only in what the player actually logged, with an explicit instruction never to invent stats or skills that aren't in the data.
+
+**Flow:** player logs a match → data is sent server-side to `/api/generate-report` → **Gemini 3.6 Flash** returns a strict JSON object → the app renders it as a structured dossier (Summary / Strengths / Areas to Develop / Verdict).
 
 <details>
-<summary><strong>View the full system prompt</strong></summary>
+<summary><strong>📄 View the exact system prompt</strong></summary>
 
 ```text
 You are an experienced football scout writing an internal scouting note about an
@@ -129,7 +135,7 @@ Do not fabricate specific statistics that were not provided. Only reason from
 what's given.
 ```
 
-**Enforced response schema:**
+**Enforced JSON response schema:**
 
 ```json
 {
@@ -148,19 +154,19 @@ what's given.
 
 ---
 
-## 🛠️ Built With
+## 🛠️ Under the Hood
 
 | Layer | Technology |
 |---|---|
-| **Framework** | Next.js 16 (App Router), React 19, TypeScript |
-| **AI** | Google Gemini 3.6 Flash (`@google/genai`) |
-| **Database & Auth** | Supabase (Postgres, Row Level Security, `@supabase/ssr`) |
-| **Styling** | Tailwind CSS v4, Lucide Icons, Motion |
-| **Deployment** | Vercel |
+| **Framework** | Next.js 16 (App Router) · React 19 · TypeScript |
+| **AI Engine** | Google Gemini 3.6 Flash (`@google/genai`) |
+| **Database & Auth** | Supabase — Postgres, Row Level Security, `@supabase/ssr` |
+| **Styling** | Tailwind CSS v4 · Lucide Icons · Motion |
+| **Deployment** | Vercel — auto-deploys on every push to `main` |
 
 ---
 
-## 🚀 Run It Locally
+## 🚀 Run It Yourself
 
 **Prerequisites:** Node.js 20+, npm
 
@@ -202,12 +208,16 @@ Full migration script at [`schema.sql`](./schema.sql).
 | `scout_preferences` | A scout's default search filters |
 | `shortlists` | Saved prospects per scout |
 
-Row Level Security is enabled on every table — players can only write their own data, scouts can browse talent profiles but only manage their own shortlist.
+Row Level Security is enforced on every table — players can only write their own data, scouts can browse talent but only manage their own shortlist.
 
 ---
 
 <div align="center">
 
-*FootyFolio — helping grassroots football talent get seen.*
+### Built solo, end to end — idea, design, code, and deployment.
+
+**FootyFolio — because talent shouldn't need a lucky break to get noticed.**
+
+[**Try the live app →**](https://footyfolio.vercel.app)
 
 </div>
