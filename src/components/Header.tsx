@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserRole } from '../types';
-import { Shield, UserCheck, RefreshCw, Database, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut, ExternalLink } from 'lucide-react';
+import { Shield, UserCheck, RefreshCw, Database, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   currentRole: UserRole | null;
@@ -53,18 +53,6 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Center / Right Role Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
           
-          {/* Open App in New Tab Button */}
-          <a
-            href={typeof window !== 'undefined' ? window.location.href : '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Open App in standalone new tab (required for Google OAuth)"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#4B5563] hover:text-[#111827] bg-[#F9FAFB] hover:bg-[#F3F4F6] border border-[#E5E7EB] transition-all cursor-pointer"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-[#6B7280]" />
-            <span className="hidden sm:inline">Open in New Tab</span>
-          </a>
-
           {/* LANDING / UNAUTHENTICATED HEADER BUTTONS */}
           {currentRole === null && onOpenAuth && (
             <div className="flex items-center gap-2">
