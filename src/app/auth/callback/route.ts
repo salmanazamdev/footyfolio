@@ -45,38 +45,8 @@ export async function GET(request: Request) {
 
         const target = profile?.onboarding_completed ? '/' : '/onboarding';
         
-        // Return HTML response that posts message if in popup or redirects
-        return new NextResponse(
-          `<!DOCTYPE html>
-          <html>
-            <head>
-              <title>Authentication Successful</title>
-              <style>
-                body { font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #0f172a; }
-                .card { text-align: center; padding: 2rem; background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-              </style>
-            </head>
-            <body>
-              <div class="card">
-                <h2>Sign in Successful</h2>
-                <p>Redirecting you to FootyFolio...</p>
-              </div>
-              <script>
-                if (window.opener) {
-                  try {
-                    window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS', target: '${target}' }, '*');
-                  } catch (e) {}
-                  window.close();
-                } else {
-                  window.location.href = '${target}';
-                }
-              </script>
-            </body>
-          </html>`,
-          {
-            headers: { 'Content-Type': 'text/html' },
-          }
-        );
+        // Direct HTTP redirect
+        return NextResponse.redirect(`${origin}${target}`);
       }
     }
   }
