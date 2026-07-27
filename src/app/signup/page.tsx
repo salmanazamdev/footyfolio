@@ -22,6 +22,37 @@ export default function SignupPage() {
   const supabaseConfigured = isSupabaseConfigured();
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code && supabaseConfigured) {
+      setGoogleLoading(true);
+      const supabase = createClient();
+      supabase.auth.exchangeCodeForSession(code).then(async ({ data, error }) => {
+        if (error) {
+          console.error('OAuth code exchange error:', error);
+          setErrorMessage('Failed to complete Google Sign-In: ' + error.message);
+          setGoogleLoading(false);
+        } else if (data?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', data.user.id)
+            .single();
+
+          if (profile?.onboarding_completed) {
+            router.push('/');
+          } else {
+            router.push('/onboarding');
+          }
+        }
+      }).catch((err) => {
+        console.error('OAuth exchange unexpected error:', err);
+        setErrorMessage('An error occurred completing Google sign-in.');
+        setGoogleLoading(false);
+      });
+    }
+
     const handleMessage = (event: MessageEvent) => {
       const origin = event.origin;
       if (!origin.endsWith('.run.app') && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
@@ -34,7 +65,7 @@ export default function SignupPage() {
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [router]);
+  }, [router, supabaseConfigured]);
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
@@ -43,7 +74,8 @@ export default function SignupPage() {
     try {
       if (supabaseConfigured) {
         const supabase = createClient();
-        const redirectUrl = `${window.location.origin}/auth/callback`;
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+        const redirectUrl = `${siteUrl.replace(/\/$/, '')}/auth/callback`;
 
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
