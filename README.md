@@ -126,7 +126,7 @@ Here are the key views of FootyFolio in action:
 
 ### 1. Clone the Repository & Install Dependencies
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/salmanazamdev/footyfolio
 cd footyfolio
 npm install
 ```
