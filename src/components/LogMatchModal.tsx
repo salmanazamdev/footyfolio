@@ -43,17 +43,24 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-lg overflow-hidden shadow-xl relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Modal Header */}
-        <div className="bg-[#16A34A] text-white p-5 flex items-center justify-between">
+        <div className="shrink-0 bg-[#16A34A] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-[#D97706]" />
             <h3 className="font-sans text-xl font-bold">Log Your Match</h3>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="p-1.5 rounded-xl hover:bg-white/10 text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -61,7 +68,7 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           
           <div className="grid grid-cols-2 gap-4">
             <div>

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TalentProfile } from '../types';
 import { ScoutingReportCard } from './ScoutingReportCard';
-import { X, BookmarkCheck, MapPin, Calendar, Activity, Award, User, Clock, Footprints } from 'lucide-react';
+import { X, BookmarkCheck, MapPin, Activity, Award } from 'lucide-react';
 
 interface TalentDetailModalProps {
   talent: TalentProfile | null;
@@ -20,6 +20,16 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
   onToggleShortlist,
   scoutMode = true
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !talent) return null;
 
   const totalGoals = talent.matches.reduce((acc, m) => acc + (m.goals || 0), 0);
@@ -27,14 +37,20 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
   const totalMinutes = talent.matches.reduce((acc, m) => acc + (m.minutesPlayed || 0), 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in overflow-y-auto">
-      <div className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-3xl my-8 overflow-hidden shadow-2xl relative">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-sm animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white border border-[#E5E7EB] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header Bar */}
-        <div className="bg-[#111827] text-white p-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="shrink-0 bg-[#111827] text-white p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 z-10 border-b border-white/10">
           
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white text-[#15803D] flex items-center justify-center text-xl font-bold shrink-0 border-2 border-white/90 shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white text-[#15803D] flex items-center justify-center text-lg sm:text-xl font-bold shrink-0 border-2 border-white/90 shadow-xs">
               {talent.name.charAt(0)}
             </div>
             <div>
@@ -47,18 +63,18 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
                   {talent.city}
                 </span>
               </div>
-              <h2 className="font-sans text-2xl font-bold text-white">
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-white">
                 {talent.name}
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {scoutMode && onToggleShortlist && (
               <button
                 onClick={() => onToggleShortlist(talent.id)}
                 id={`btn-modal-shortlist-${talent.id}`}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
                   isShortlisted
                     ? 'bg-[#D97706] text-white'
                     : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
@@ -71,7 +87,8 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/10 text-[#9CA3AF] hover:text-white transition-colors cursor-pointer"
+              aria-label="Close modal"
+              className="p-2 sm:p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0 border border-white/20 flex items-center justify-center"
             >
               <X className="w-5 h-5" />
             </button>
@@ -80,27 +97,27 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
         </div>
 
         {/* Profile Stats Quick Strip */}
-        <div className="grid grid-cols-4 bg-[#16A34A] text-white divide-x divide-white/20 text-center py-3">
+        <div className="shrink-0 grid grid-cols-4 bg-[#16A34A] text-white divide-x divide-white/20 text-center py-2.5 sm:py-3">
           <div>
             <span className="text-[10px] font-mono text-white/80 uppercase block">Age</span>
-            <span className="font-sans text-base font-bold">{talent.age} yrs</span>
+            <span className="font-sans text-xs sm:text-base font-bold">{talent.age} yrs</span>
           </div>
           <div>
             <span className="text-[10px] font-mono text-white/80 uppercase block">Matches</span>
-            <span className="font-sans text-base font-bold">{talent.matches.length}</span>
+            <span className="font-sans text-xs sm:text-base font-bold">{talent.matches.length}</span>
           </div>
           <div>
             <span className="text-[10px] font-mono text-white/80 uppercase block">G / A</span>
-            <span className="font-sans text-base font-bold text-[#FEF08A]">{totalGoals} G • {totalAssists} A</span>
+            <span className="font-sans text-xs sm:text-base font-bold text-[#FEF08A]">{totalGoals} G • {totalAssists} A</span>
           </div>
           <div>
             <span className="text-[10px] font-mono text-white/80 uppercase block">Minutes</span>
-            <span className="font-sans text-base font-bold">{totalMinutes}'</span>
+            <span className="font-sans text-xs sm:text-base font-bold">{totalMinutes}'</span>
           </div>
         </div>
 
-        {/* Modal Main Body */}
-        <div className="p-6 lg:p-8 space-y-6">
+        {/* Modal Main Body (Scrollable) */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
           
           {/* AI Scouting Report Section */}
           <div>
@@ -169,3 +186,4 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
     </div>
   );
 };
+
