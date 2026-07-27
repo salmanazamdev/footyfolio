@@ -309,7 +309,7 @@ export async function saveScoutPreferences(userId: string, data: { name: string;
           profile_id: userId,
           positions: data.positions,
           preferred_city: data.city,
-        });
+        }, { onConflict: 'profile_id' });
     } catch (e) {
       console.warn('Supabase scout prefs save failed:', e);
     }
@@ -337,28 +337,15 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (!profile) return null;
 
-    const { data: details } = await supabase
-      .from('talent_details')
-      .select('*')
-      .eq('profile_id', userId)
-      .single();
-
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('*')
-      .eq('profile_id', userId)
-      .order('created_at', { ascending: false });
-
-    const { data: reports } = await supabase
-      .from('scouting_reports')
-      .select('*')
-      .eq('profile_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1);
+    const [{ data: details }, { data: matches }, { data: reports }] = await Promise.all([
+      supabase.from('talent_details').select('*').eq('profile_id', userId).maybeSingle(),
+      supabase.from('matches').select('*').eq('profile_id', userId).order('created_at', { ascending: false }),
+      supabase.from('scouting_reports').select('*').eq('profile_id', userId).order('created_at', { ascending: false }).limit(1),
+    ]);
 
     const formattedMatches: Match[] = (matches || []).map((m: any) => ({
       id: m.id,
@@ -420,65 +407,56 @@ export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
       return INITIAL_TALENT_PROFILES;
     }
 
-    const talentProfiles: TalentProfile[] = [];
+    const talentProfiles: TalentProfile[] = await Promise.all(
+      profiles.map(async (p) => {
+        const [detailsRes, matchesRes, reportsRes] = await Promise.all([
+          supabase.from('talent_details').select('*').eq('profile_id', p.id).maybeSingle(),
+          supabase.from('matches').select('*').eq('profile_id', p.id).order('created_at', { ascending: false }),
+          supabase.from('scouting_reports').select('*').eq('profile_id', p.id).order('created_at', { ascending: false }).limit(1),
+        ]);
 
-    for (const p of profiles) {
-      const { data: details } = await supabase
-        .from('talent_details')
-        .select('*')
-        .eq('profile_id', p.id)
-        .single();
+        const details = detailsRes.data;
+        const matches = matchesRes.data;
+        const reports = reportsRes.data;
 
-      const { data: matches } = await supabase
-        .from('matches')
-        .select('*')
-        .eq('profile_id', p.id)
-        .order('created_at', { ascending: false });
+        const formattedMatches: Match[] = (matches || []).map((m: any) => ({
+          id: m.id,
+          talentProfileId: p.id,
+          goals: m.goals || 0,
+          assists: m.assists || 0,
+          minutesPlayed: m.minutes_played || 0,
+          notes: m.notes || '',
+          matchDate: m.match_date || new Date().toISOString().split('T')[0],
+          opponent: m.opponent || 'Match',
+        }));
 
-      const { data: reports } = await supabase
-        .from('scouting_reports')
-        .select('*')
-        .eq('profile_id', p.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        const latestReportRaw = reports && reports[0];
+        const latestReport: ScoutingReport | undefined = latestReportRaw ? {
+          id: latestReportRaw.id,
+          talentProfileId: p.id,
+          summary: latestReportRaw.summary,
+          strengths: Array.isArray(latestReportRaw.strengths) ? latestReportRaw.strengths : [],
+          areasToDevelop: Array.isArray(latestReportRaw.areas_to_develop) ? latestReportRaw.areas_to_develop : [],
+          verdict: latestReportRaw.verdict,
+          generatedAt: latestReportRaw.created_at || new Date().toISOString(),
+        } : undefined;
 
-      const formattedMatches: Match[] = (matches || []).map((m: any) => ({
-        id: m.id,
-        talentProfileId: p.id,
-        goals: m.goals || 0,
-        assists: m.assists || 0,
-        minutesPlayed: m.minutes_played || 0,
-        notes: m.notes || '',
-        matchDate: m.match_date || new Date().toISOString().split('T')[0],
-        opponent: m.opponent || 'Match',
-      }));
-
-      const latestReportRaw = reports && reports[0];
-      const latestReport: ScoutingReport | undefined = latestReportRaw ? {
-        id: latestReportRaw.id,
-        talentProfileId: p.id,
-        summary: latestReportRaw.summary,
-        strengths: Array.isArray(latestReportRaw.strengths) ? latestReportRaw.strengths : [],
-        areasToDevelop: Array.isArray(latestReportRaw.areas_to_develop) ? latestReportRaw.areas_to_develop : [],
-        verdict: latestReportRaw.verdict,
-        generatedAt: latestReportRaw.created_at || new Date().toISOString(),
-      } : undefined;
-
-      talentProfiles.push({
-        id: p.id,
-        userId: p.id,
-        name: p.name || 'Talent Player',
-        age: p.age || 18,
-        position: (details?.position as any) || 'forward',
-        city: p.city || 'Karachi',
-        bio: details?.bio || 'Talented amateur player logged on FootyFolio.',
-        avatarUrl: p.avatar_url,
-        preferredFoot: details?.preferred_foot || 'Right',
-        matches: formattedMatches,
-        latestReport,
-        createdAt: p.created_at || new Date().toISOString(),
-      });
-    }
+        return {
+          id: p.id,
+          userId: p.id,
+          name: p.name || 'Talent Player',
+          age: p.age || 18,
+          position: (details?.position as any) || 'forward',
+          city: p.city || 'Karachi',
+          bio: details?.bio || 'Talented amateur player logged on FootyFolio.',
+          avatarUrl: p.avatar_url,
+          preferredFoot: details?.preferred_foot || 'Right',
+          matches: formattedMatches,
+          latestReport,
+          createdAt: p.created_at || new Date().toISOString(),
+        };
+      })
+    );
 
     // Merge mock talents if fewer than 2 real profiles so scout feed remains rich during testing
     if (talentProfiles.length < 2) {
@@ -537,7 +515,7 @@ export async function getScoutPreferences(userId: string): Promise<ScoutProfile 
       .from('scout_preferences')
       .select('*')
       .eq('profile_id', userId)
-      .single();
+      .maybeSingle();
 
     return {
       id: userId,

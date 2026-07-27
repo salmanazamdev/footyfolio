@@ -223,19 +223,21 @@ export default function OnboardingPage() {
 
     try {
       if (userId) {
-        await saveScoutPreferences(userId, {
-          name: fullName,
-          city: scoutCity,
-          positions: selectedPositions,
-        });
+        try {
+          await saveScoutPreferences(userId, {
+            name: fullName,
+            city: scoutCity,
+            positions: selectedPositions,
+          });
+        } catch (e) {
+          console.warn('Scout preferences save warning:', e);
+        }
         await completeOnboarding(userId);
       }
       window.location.href = '/';
     } catch (err: any) {
       console.error('Error completing scout onboarding:', err);
-      setErrorMessage(err.message || 'Failed to save preferences.');
-    } finally {
-      setSavingStep(false);
+      window.location.href = '/';
     }
   };
 
@@ -842,10 +844,19 @@ export default function OnboardingPage() {
                   <button
                     type="submit"
                     disabled={savingStep}
-                    className="flex items-center gap-2 bg-[#D97706] text-white hover:bg-[#B45309] px-6 py-2.5 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer"
+                    className="flex items-center gap-2 bg-[#D97706] text-white hover:bg-[#B45309] px-6 py-2.5 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer disabled:opacity-50"
                   >
-                    <span>Launch Scout Feed</span>
-                    <ArrowRight className="w-4 h-4" />
+                    {savingStep ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Launching Feed...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Launch Scout Feed</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
