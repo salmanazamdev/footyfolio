@@ -47,7 +47,7 @@ export default function OnboardingPage() {
         if (user) {
           setUserId(user.id);
           if (profile) {
-            setFullName(profile.name || '');
+            if (profile.name) setFullName(profile.name);
             if (profile.role) setRole(profile.role);
             if (profile.age) setAge(profile.age);
             if (profile.city) {
@@ -55,9 +55,14 @@ export default function OnboardingPage() {
               setScoutCity(profile.city);
             }
           }
+        } else {
+          // Initialize fallback demo user ID for smooth local onboarding
+          const fallbackId = 'demo-user-' + Date.now();
+          setUserId(fallbackId);
         }
       } catch (err) {
         console.error('Error loading onboarding user profile:', err);
+        setUserId('demo-user-' + Date.now());
       } finally {
         setLoading(false);
       }

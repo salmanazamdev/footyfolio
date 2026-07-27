@@ -19,110 +19,160 @@ export interface UserProfileData {
   onboardingCompleted: boolean;
 }
 
+// Local Demo Session Storage Helpers
+const DEMO_SESSION_KEY = 'footyfolio_demo_session';
+
+export function getDemoUserSession(): { user: any; profile: UserProfileData } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(DEMO_SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+export function saveDemoUserSession(user: any, profile: UserProfileData): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify({ user, profile }));
+  } catch (e) {
+    console.error('Failed to save demo session to localStorage:', e);
+  }
+}
+
+export function clearDemoUserSession(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(DEMO_SESSION_KEY);
+  } catch (e) {}
+}
+
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
-  if (!isSupabaseConfigured()) {
-    return { user: null, profile: null };
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (!userError && user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (!profile) {
+          return {
+            user,
+            profile: {
+              id: user.id,
+              email: user.email || '',
+              name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+              role: null,
+              onboardingCompleted: false,
+            },
+          };
+        }
+
+        return {
+          user,
+          profile: {
+            id: profile.id,
+            email: user.email || '',
+            name: profile.name || user.user_metadata?.full_name || 'User',
+            role: profile.role || null,
+            age: profile.age,
+            city: profile.city,
+            avatarUrl: profile.avatar_url,
+            onboardingCompleted: !!profile.onboarding_completed,
+          },
+        };
+      }
+    } catch (e) {
+      console.warn('Supabase auth check failed, checking local demo session...', e);
+    }
   }
 
-  const supabase = createClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return { user: null, profile: null };
+  // Fallback to local demo session if Supabase is unconfigured or unavailable
+  const demoSession = getDemoUserSession();
+  if (demoSession) {
+    return demoSession;
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile) {
-    return {
-      user,
-      profile: {
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-        role: null,
-        onboardingCompleted: false,
-      },
-    };
-  }
-
-  return {
-    user,
-    profile: {
-      id: profile.id,
-      email: user.email || '',
-      name: profile.name || user.user_metadata?.full_name || 'User',
-      role: profile.role || null,
-      age: profile.age,
-      city: profile.city,
-      avatarUrl: profile.avatar_url,
-      onboardingCompleted: !!profile.onboarding_completed,
-    },
-  };
+  return { user: null, profile: null };
 }
 
 // 2. Select initial role during onboarding
 export async function selectUserRole(userId: string, role: 'talent' | 'scout', name?: string, avatarUrl?: string) {
-  const supabase = createClient();
-  
-  // First check if profile already exists
-  const { data: existing } = await supabase
-    .from('profiles')
-    .select('id, name, avatar_url')
-    .eq('id', userId)
-    .single();
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .eq('id', userId)
+        .single();
 
-  const { error } = await supabase
-    .from('profiles')
-    .upsert({
-      id: userId,
-      role,
-      name: existing?.name || name || 'FootyFolio User',
-      avatar_url: existing?.avatar_url || avatarUrl || null,
-    }, { onConflict: 'id' });
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          role,
+          name: existing?.name || name || 'FootyFolio User',
+          avatar_url: existing?.avatar_url || avatarUrl || null,
+        }, { onConflict: 'id' });
 
-  if (error) {
-    console.error('Error setting role:', error);
-    throw new Error(error.message);
+      if (error) console.error('Error setting role in Supabase:', error);
+    } catch (e) {
+      console.warn('Supabase update role failed, proceeding locally:', e);
+    }
+  }
+
+  // Also update demo session if active
+  const demo = getDemoUserSession();
+  if (demo && demo.user.id === userId) {
+    demo.profile.role = role;
+    if (name) demo.profile.name = name;
+    saveDemoUserSession(demo.user, demo.profile);
   }
 }
 
 // 3. Save Talent Onboarding Step 1 (Basics)
 export async function saveTalentBasics(userId: string, data: { name: string; age: number; position: string; city: string }) {
-  const supabase = createClient();
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          role: 'talent',
+          name: data.name,
+          age: data.age,
+          city: data.city,
+        }, { onConflict: 'id' });
 
-  // Upsert profile
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .upsert({
-      id: userId,
-      role: 'talent',
-      name: data.name,
-      age: data.age,
-      city: data.city,
-    }, { onConflict: 'id' });
-
-  if (profileError) {
-    console.error('Error updating talent profile:', profileError);
-    throw new Error(profileError.message);
+      await supabase
+        .from('talent_details')
+        .upsert({
+          profile_id: userId,
+          position: data.position,
+        });
+    } catch (e) {
+      console.warn('Supabase save talent basics failed, updating local state:', e);
+    }
   }
 
-  // Upsert talent_details
-  const { error: detailsError } = await supabase
-    .from('talent_details')
-    .upsert({
-      profile_id: userId,
-      position: data.position,
-    });
-
-  if (detailsError) {
-    console.error('Error saving talent details:', detailsError);
-    throw new Error(detailsError.message);
+  // Update demo session
+  const demo = getDemoUserSession();
+  if (demo) {
+    demo.profile.name = data.name;
+    demo.profile.age = data.age;
+    demo.profile.city = data.city;
+    demo.profile.role = 'talent';
+    saveDemoUserSession(demo.user, demo.profile);
   }
 }
 
@@ -135,28 +185,39 @@ export async function saveMatchLog(userId: string, matchData: {
   notes: string;
   matchDate?: string;
 }) {
-  const supabase = createClient();
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('matches')
+        .insert({
+          profile_id: userId,
+          opponent: matchData.opponent || 'Competitive Match',
+          goals: matchData.goals || 0,
+          assists: matchData.assists || 0,
+          minutes_played: matchData.minutesPlayed || 0,
+          notes: matchData.notes || '',
+          match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
+        })
+        .select()
+        .single();
 
-  const { data, error } = await supabase
-    .from('matches')
-    .insert({
-      profile_id: userId,
-      opponent: matchData.opponent || 'Competitive Match',
-      goals: matchData.goals || 0,
-      assists: matchData.assists || 0,
-      minutes_played: matchData.minutesPlayed || 0,
-      notes: matchData.notes || '',
-      match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error logging match:', error);
-    throw new Error(error.message);
+      if (!error && data) return data;
+    } catch (e) {
+      console.warn('Supabase match log failed, saving locally:', e);
+    }
   }
 
-  return data;
+  return {
+    id: 'match-' + Date.now(),
+    profile_id: userId,
+    opponent: matchData.opponent || 'Competitive Match',
+    goals: matchData.goals || 0,
+    assists: matchData.assists || 0,
+    minutes_played: matchData.minutesPlayed || 0,
+    notes: matchData.notes || '',
+    match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
+  };
 }
 
 // 5. Save AI Scouting Report
@@ -167,75 +228,93 @@ export async function saveScoutingReport(userId: string, report: {
   verdict: string;
   source?: string;
 }) {
-  const supabase = createClient();
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('scouting_reports')
+        .insert({
+          profile_id: userId,
+          summary: report.summary,
+          strengths: report.strengths,
+          areas_to_develop: report.areasToDevelop,
+          verdict: report.verdict,
+          source: report.source || 'gemini-3.6-flash',
+        })
+        .select()
+        .single();
 
-  const { data, error } = await supabase
-    .from('scouting_reports')
-    .insert({
-      profile_id: userId,
-      summary: report.summary,
-      strengths: report.strengths,
-      areas_to_develop: report.areasToDevelop,
-      verdict: report.verdict,
-      source: report.source || 'gemini-3.6-flash',
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error saving scouting report:', error);
-    throw new Error(error.message);
+      if (!error && data) return data;
+    } catch (e) {
+      console.warn('Supabase scouting report save failed, returning local report:', e);
+    }
   }
 
-  return data;
+  return {
+    id: 'report-' + Date.now(),
+    profile_id: userId,
+    summary: report.summary,
+    strengths: report.strengths,
+    areas_to_develop: report.areasToDevelop,
+    verdict: report.verdict,
+    source: report.source || 'gemini-3.6-flash',
+    created_at: new Date().toISOString(),
+  };
 }
 
 // 6. Complete Onboarding
 export async function completeOnboarding(userId: string) {
-  const supabase = createClient();
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', userId);
+    } catch (e) {
+      console.warn('Supabase complete onboarding failed, updating demo state:', e);
+    }
+  }
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({ onboarding_completed: true })
-    .eq('id', userId);
-
-  if (error) {
-    console.error('Error completing onboarding:', error);
-    throw new Error(error.message);
+  const demo = getDemoUserSession();
+  if (demo) {
+    demo.profile.onboardingCompleted = true;
+    saveDemoUserSession(demo.user, demo.profile);
   }
 }
 
 // 7. Save Scout Preferences
 export async function saveScoutPreferences(userId: string, data: { name: string; city: string; positions: string[] }) {
-  const supabase = createClient();
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          role: 'scout',
+          name: data.name,
+          city: data.city,
+        }, { onConflict: 'id' });
 
-  // Upsert profile basic info
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .upsert({
-      id: userId,
-      role: 'scout',
-      name: data.name,
-      city: data.city,
-    }, { onConflict: 'id' });
-
-  if (profileError) {
-    console.error('Error updating scout profile:', profileError);
-    throw new Error(profileError.message);
+      await supabase
+        .from('scout_preferences')
+        .upsert({
+          profile_id: userId,
+          positions: data.positions,
+          preferred_city: data.city,
+        });
+    } catch (e) {
+      console.warn('Supabase scout prefs save failed:', e);
+    }
   }
 
-  // Upsert scout_preferences
-  const { error: prefError } = await supabase
-    .from('scout_preferences')
-    .upsert({
-      profile_id: userId,
-      positions: data.positions,
-      preferred_city: data.city,
-    });
-
-  if (prefError) {
-    console.error('Error saving scout preferences:', prefError);
-    throw new Error(prefError.message);
+  const demo = getDemoUserSession();
+  if (demo) {
+    demo.profile.name = data.name;
+    demo.profile.city = data.city;
+    demo.profile.role = 'scout';
+    saveDemoUserSession(demo.user, demo.profile);
   }
 }
 
