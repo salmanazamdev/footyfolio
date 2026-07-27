@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserRole } from '../types';
+import { Logo } from './Logo';
 import { Shield, UserCheck, RefreshCw, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 interface HeaderProps {
@@ -37,26 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
         
         {/* Brand Logo & Wordmark */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          <div className="cursor-pointer group flex items-center gap-2.5" onClick={onSwitchRole}>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-slate-800 shadow-xs group-hover:scale-105 transition-transform bg-slate-900 shrink-0 flex items-center justify-center p-1.5">
-              <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-emerald-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" className="stroke-slate-700" />
-                <path d="M12 3v18" className="stroke-slate-700" />
-                <path d="M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z" fill="currentColor" fillOpacity="0.2" />
-                <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-              </svg>
-            </div>
-            <div>
-              <div className="flex items-baseline">
-                <span className="font-sans text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-[#111827] group-hover:text-[#16A34A] transition-colors">
-                  footyfolio
-                </span>
-                <span className="text-[#D97706] text-xl sm:text-2xl lg:text-3xl font-black leading-none ml-[1px]">.</span>
-              </div>
-              <p className="text-[9px] sm:text-[10px] font-sans text-[#6B7280] tracking-wider uppercase -mt-0.5 font-semibold">
-                get scouted. get seen.
-              </p>
-            </div>
+          <div className="cursor-pointer group" onClick={onSwitchRole}>
+            <Logo size="md" />
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 import { ArrowRight, Lock, Mail, User, AlertCircle, AlertTriangle } from 'lucide-react';
 import { isSupabaseConfigured, saveDemoUserSession } from '../../lib/supabase/helpers';
+import { Logo } from '../../components/Logo';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -211,16 +212,12 @@ export default function SignupPage() {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         
-        {/* FootyFolio Wordmark */}
-        <Link href="/" className="inline-flex items-baseline mb-2 group">
-          <span className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111827]">
-            footyfolio
-          </span>
-          <span className="text-[#D97706] text-3xl sm:text-4xl font-black leading-none ml-[1px]">.</span>
-        </Link>
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
-          Get Scouted. Get Seen.
-        </p>
+        {/* FootyFolio Brand */}
+        <div className="flex justify-center mb-2">
+          <Link href="/">
+            <Logo size="lg" />
+          </Link>
+        </div>
 
         <h2 className="mt-6 text-2xl font-bold tracking-tight text-[#111827]">
           Create your account

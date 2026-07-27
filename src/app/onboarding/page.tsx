@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getCurrentUserProfile, selectUserRole, saveTalentBasics, saveMatchLog, saveScoutingReport, completeOnboarding, saveScoutPreferences } from '../../lib/supabase/helpers';
 import { UserCheck, Shield, ArrowRight, CheckCircle2, AlertCircle, PlusCircle, Sparkles, Trophy, Search, MapPin, User, ChevronRight, Activity, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
+import { Logo } from '../../components/Logo';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -193,10 +194,10 @@ export default function OnboardingPage() {
       if (userId) {
         await completeOnboarding(userId);
       }
-      window.location.href = '/';
+      router.push('/');
     } catch (err: any) {
       console.error('Error marking onboarding complete:', err);
-      window.location.href = '/';
+      router.push('/');
     }
   };
 
@@ -245,11 +246,13 @@ export default function OnboardingPage() {
           console.warn('Scout preferences save warning:', e);
         }
         await completeOnboarding(userId);
+      } else {
+        await completeOnboarding('scout-demo');
       }
-      window.location.href = '/';
+      router.push('/');
     } catch (err: any) {
       console.error('Error completing scout onboarding:', err);
-      window.location.href = '/';
+      router.push('/');
     }
   };
 
@@ -280,11 +283,8 @@ export default function OnboardingPage() {
       {/* Header Bar */}
       <header className="border-b border-[#E5E7EB] bg-white px-4 lg:px-8 py-3.5 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-baseline group">
-            <span className="text-2xl font-bold tracking-tight text-[#111827]">
-              footyfolio
-            </span>
-            <span className="text-[#D97706] text-2xl font-black leading-none ml-[1px]">.</span>
+          <Link href="/">
+            <Logo size="sm" showTagline={false} />
           </Link>
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">

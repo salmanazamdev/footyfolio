@@ -61,7 +61,9 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
+
+        const localCompleted = typeof window !== 'undefined' && localStorage.getItem('footyfolio_onboarded_' + user.id) === 'true';
 
         if (!profile) {
           return {
@@ -71,7 +73,7 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
               email: user.email || '',
               name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
               role: null,
-              onboardingCompleted: false,
+              onboardingCompleted: localCompleted,
             },
           };
         }
@@ -86,7 +88,7 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
             age: profile.age,
             city: profile.city,
             avatarUrl: profile.avatar_url,
-            onboardingCompleted: !!profile.onboarding_completed,
+            onboardingCompleted: Boolean(profile.onboarding_completed) || localCompleted,
           },
         };
       }
@@ -113,7 +115,7 @@ export async function selectUserRole(userId: string, role: 'talent' | 'scout', n
         .from('profiles')
         .select('id, name, avatar_url')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       const { error } = await supabase
         .from('profiles')
@@ -264,18 +266,26 @@ export async function saveScoutingReport(userId: string, report: {
 
 // 6. Complete Onboarding
 export async function completeOnboarding(userId: string) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          id: userId,
-          onboarding_completed: true,
-        }, { onConflict: 'id' });
+        .update({ onboarding_completed: true })
+        .eq('id', userId);
 
       if (error) {
-        console.error('Error completing onboarding in Supabase:', error);
+        console.error('Error completing onboarding in Supabase update:', error);
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: userId,
+            onboarding_completed: true,
+          }, { onConflict: 'id' });
       }
     } catch (e) {
       console.warn('Supabase complete onboarding failed, updating demo state:', e);
@@ -291,6 +301,10 @@ export async function completeOnboarding(userId: string) {
 
 // 7. Save Scout Preferences
 export async function saveScoutPreferences(userId: string, data: { name: string; city: string; positions: string[] }) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -301,6 +315,7 @@ export async function saveScoutPreferences(userId: string, data: { name: string;
           role: 'scout',
           name: data.name,
           city: data.city,
+          onboarding_completed: true,
         }, { onConflict: 'id' });
 
       await supabase
@@ -320,6 +335,7 @@ export async function saveScoutPreferences(userId: string, data: { name: string;
     demo.profile.name = data.name;
     demo.profile.city = data.city;
     demo.profile.role = 'scout';
+    demo.profile.onboardingCompleted = true;
     saveDemoUserSession(demo.user, demo.profile);
   }
 }
