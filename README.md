@@ -49,29 +49,45 @@ Deployed on **Vercel**, fully functional, and ready for evaluation.
 
 ## 🖼️ Screenshots
 
-<!-- Replace the src paths below with your actual screenshot files, e.g. /screenshots/dashboard.png -->
-
 <table>
 <tr>
-<td width="33%">
+<td width="50%">
 
-**Player Dashboard**
+**Role Selection — Player or Scout**
 <br>
-![Player dashboard showing match stats and AI scouting report](screenshots/player-dashboard.png)
+![Onboarding screen letting a new user choose Player or Scout mode](docs/screenshots/role-selection.png)
 
 </td>
-<td width="33%">
+<td width="50%">
 
-**Match Logger**
+**Player Profile — Full Match History**
 <br>
-![Match logging form](screenshots/match-logger.png)
+![Player profile showing career stats and logged match history](docs/screenshots/player-profile.png)
 
 </td>
-<td width="33%">
+</tr>
+<tr>
+<td width="50%">
+
+**Logging a Match**
+<br>
+![Modal for logging match stats and tactical notes](docs/screenshots/log-match.png)
+
+</td>
+<td width="50%">
+
+**AI-Generated Scouting Report**
+<br>
+![AI scouting report with executive summary, strengths, and development areas](docs/screenshots/ai-scouting-report.png)
+
+</td>
+</tr>
+<tr>
+<td colspan="2">
 
 **Scout Discovery Feed**
 <br>
-![Scout dashboard with filterable talent cards](screenshots/scout-discovery.png)
+![Scout dashboard showing filterable talent cards with tactical evaluations](docs/screenshots/scout-discovery.png)
 
 </td>
 </tr>
