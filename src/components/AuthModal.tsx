@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase/client';
 import { isSupabaseConfigured, selectUserRole } from '../lib/supabase/helpers';
-import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X, ExternalLink } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -222,6 +222,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <span>{errorMessage}</span>
             </div>
           )}
+
+          {/* Google OAuth iFrame Note */}
+          <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 text-blue-900 text-xs flex items-start gap-2.5">
+            <ExternalLink className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <span className="font-semibold text-blue-900 block">Testing Google Sign-In?</span>
+              <span className="text-blue-700 text-[11px] block mb-1.5">
+                Google blocks OAuth logins inside embedded preview frames. Open the app in a standalone new browser tab to test Google Sign-In seamlessly.
+              </span>
+              <a
+                href={typeof window !== 'undefined' ? window.location.href : '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition-all shadow-2xs"
+              >
+                <span>Open App in New Tab</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
 
           {/* Google Sign-In Button */}
           <button
