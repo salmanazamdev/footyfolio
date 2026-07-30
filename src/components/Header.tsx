@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UserRole } from '../types';
 import { Logo } from './Logo';
-import { Shield, UserCheck, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut, ChevronDown, Database, User } from 'lucide-react';
+import { AvatarDisplay } from './AvatarDisplay';
+import { Shield, UserCheck, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut, ChevronDown, Database, Sparkles } from 'lucide-react';
 
 interface HeaderProps {
   currentRole: UserRole | null;
@@ -11,6 +12,7 @@ interface HeaderProps {
   avatarUrl?: string;
   onOpenLogMatch?: () => void;
   onOpenSchemaModal?: () => void;
+  onOpenAvatarModal?: () => void;
   shortlistCount?: number;
   onViewShortlist?: () => void;
   activeTab?: 'feed' | 'shortlist';
@@ -26,6 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   avatarUrl,
   onOpenLogMatch,
   onOpenSchemaModal,
+  onOpenAvatarModal,
   shortlistCount = 0,
   onViewShortlist,
   activeTab = 'feed',
@@ -36,7 +39,6 @@ export const Header: React.FC<HeaderProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const displayName = activeTalentName || activeScoutName || 'User Account';
-  const initial = displayName.charAt(0).toUpperCase();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -146,19 +148,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex items-center gap-1.5 p-0.5 sm:p-1 rounded-full border-2 border-[#E5E7EB] hover:border-[#16A34A] focus:outline-hidden transition-all cursor-pointer bg-white shadow-2xs"
                   title="User Profile Menu"
                 >
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={displayName}
-                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-xs ${
-                      currentRole === 'talent' ? 'bg-[#16A34A]' : 'bg-[#D97706]'
-                    }`}>
-                      {initial}
-                    </div>
-                  )}
+                  <AvatarDisplay avatarUrl={avatarUrl} name={displayName} size="sm" />
                   <ChevronDown className={`w-3.5 h-3.5 text-[#6B7280] transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -169,19 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
                     {/* Header User Details Section */}
                     <div className="p-4 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9] border-b border-[#E5E7EB]">
                       <div className="flex items-center gap-3">
-                        {avatarUrl ? (
-                          <img
-                            src={avatarUrl}
-                            alt={displayName}
-                            className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-xs"
-                          />
-                        ) : (
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-sm border-2 border-white ${
-                            currentRole === 'talent' ? 'bg-[#16A34A]' : 'bg-[#D97706]'
-                          }`}>
-                            {initial}
-                          </div>
-                        )}
+                        <AvatarDisplay avatarUrl={avatarUrl} name={displayName} size="lg" />
 
                         <div className="flex-1 min-w-0">
                           <h4 className="font-sans font-bold text-sm text-[#111827] truncate">
@@ -207,6 +185,19 @@ export const Header: React.FC<HeaderProps> = ({
 
                     {/* Menu Actions */}
                     <div className="p-2 space-y-1 text-xs font-medium">
+                      {onOpenAvatarModal && (
+                        <button
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            onOpenAvatarModal();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-[#F8FAFC] text-[#374151] hover:text-[#16A34A] transition-colors cursor-pointer"
+                        >
+                          <Sparkles className="w-4 h-4 text-[#D97706]" />
+                          <span>Change Mascot / Photo</span>
+                        </button>
+                      )}
+
                       {currentRole === 'talent' && onOpenLogMatch && (
                         <button
                           onClick={() => {

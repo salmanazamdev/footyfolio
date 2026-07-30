@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { TalentProfile } from '../types';
 import { ScoutingReportCard } from './ScoutingReportCard';
+import { AvatarDisplay } from './AvatarDisplay';
 import { X, BookmarkCheck, MapPin, Activity, Award } from 'lucide-react';
 
 interface TalentDetailModalProps {
@@ -50,9 +51,7 @@ export const TalentDetailModal: React.FC<TalentDetailModalProps> = ({
         <div className="shrink-0 bg-[#111827] text-white p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 z-10 border-b border-white/10">
           
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white text-[#15803D] flex items-center justify-center text-lg sm:text-xl font-bold shrink-0 border-2 border-white/90 shadow-xs">
-              {talent.name.charAt(0)}
-            </div>
+            <AvatarDisplay avatarUrl={talent.avatarUrl} name={talent.name} size="lg" />
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-[#16A34A] text-white font-bold">

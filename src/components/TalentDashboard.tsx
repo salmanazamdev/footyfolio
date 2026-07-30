@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { TalentProfile, Match, ScoutingReport } from '../types';
 import { ScoutingReportCard } from './ScoutingReportCard';
 import { LogMatchModal } from './LogMatchModal';
-import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar, RefreshCw, Mail } from 'lucide-react';
+import { AvatarDisplay } from './AvatarDisplay';
+import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar, RefreshCw, Mail, Camera } from 'lucide-react';
 
 interface TalentDashboardProps {
   talent: TalentProfile;
   onUpdateTalent: (updated: TalentProfile) => void;
+  onOpenAvatarModal?: () => void;
 }
 
-export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpdateTalent }) => {
+export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpdateTalent, onOpenAvatarModal }) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -77,8 +79,18 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
       {/* Player Header Banner */}
       <div className="rounded-2xl sm:rounded-3xl bg-[#16A34A] text-white p-5 sm:p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white text-[#15803D] flex items-center justify-center text-xl sm:text-2xl font-bold shrink-0 shadow-sm border-2 border-white/90">
-            {talent.name.charAt(0)}
+          {/* Avatar display with edit mascot button */}
+          <div
+            onClick={onOpenAvatarModal}
+            className="relative group cursor-pointer shrink-0"
+            title="Click to change avatar / mascot"
+          >
+            <AvatarDisplay avatarUrl={talent.avatarUrl} name={talent.name} size="xl" />
+            {onOpenAvatarModal && (
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#111827] text-white flex items-center justify-center border-2 border-white shadow-xs group-hover:bg-[#D97706] transition-colors">
+                <Camera className="w-3.5 h-3.5" />
+              </div>
+            )}
           </div>
 
           <div>

@@ -141,6 +141,36 @@ export async function selectUserRole(userId: string, role: 'talent' | 'scout', n
   }
 }
 
+// Update profile avatar (Base64 photo or mascot ID)
+export async function updateUserProfileAvatar(userId: string, avatarUrl: string) {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', userId);
+    } catch (e) {
+      console.warn('Supabase avatar update failed, updating local state:', e);
+    }
+  }
+
+  // Update demo session & local storage
+  const demo = getDemoUserSession();
+  if (demo && demo.user.id === userId) {
+    demo.profile.avatarUrl = avatarUrl;
+    saveDemoUserSession(demo.user, demo.profile);
+  } else if (demo) {
+    demo.profile.avatarUrl = avatarUrl;
+    saveDemoUserSession(demo.user, demo.profile);
+  }
+
+  // Also store in localStorage fallback for instant reload
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`footyfolio_avatar_${userId}`, avatarUrl);
+  }
+}
+
 // 3. Save Talent Onboarding Step 1 (Basics)
 export async function saveTalentBasics(userId: string, data: { name: string; age: number; position: string; city: string }) {
   if (isSupabaseConfigured()) {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TalentProfile, ScoutProfile, Position, ShortlistItem } from '../types';
 import { Search, Filter, MapPin, Award, BookmarkCheck, ArrowUpRight, Shield, Check, ShieldCheck, Footprints } from 'lucide-react';
 import { TalentDetailModal } from './TalentDetailModal';
+import { AvatarDisplay } from './AvatarDisplay';
 
 interface ScoutDashboardProps {
   scoutProfile: ScoutProfile;
@@ -214,9 +215,7 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-bold text-lg shrink-0">
-                        {talent.name.charAt(0)}
-                      </div>
+                      <AvatarDisplay avatarUrl={talent.avatarUrl} name={talent.name} size="lg" />
                       <div>
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#16A34A]/10 text-[#16A34A] font-bold">

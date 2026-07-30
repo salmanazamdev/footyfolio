@@ -8,8 +8,9 @@ import { Header } from '../components/Header';
 import { TalentDashboard } from '../components/TalentDashboard';
 import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
+import { AvatarSelectorModal } from '../components/AvatarSelectorModal';
 import { createClient } from '../lib/supabase/client';
-import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase } from '../lib/supabase/helpers';
+import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
 import { LogOut, AlertTriangle, UserCheck, Shield } from 'lucide-react';
 
@@ -29,6 +30,7 @@ export default function HomePage() {
 
   // Modals
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   const supabaseConfigured = isSupabaseConfigured();
 
@@ -103,6 +105,16 @@ export default function HomePage() {
     } finally {
       router.push('/login');
     }
+  };
+
+  const handleUpdateAvatar = async (newAvatarUrl: string) => {
+    setUserProfile((prev: any) => (prev ? { ...prev, avatarUrl: newAvatarUrl } : { avatarUrl: newAvatarUrl }));
+    if (talentData) {
+      setTalentData({ ...talentData, avatarUrl: newAvatarUrl });
+    }
+
+    const userId = userProfile?.id || 'demo-user';
+    await updateUserProfileAvatar(userId, newAvatarUrl);
   };
 
   const handleUpdateTalent = async (updated: TalentProfile) => {
@@ -229,6 +241,7 @@ export default function HomePage() {
         userEmail={userProfile?.email}
         avatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl}
         onOpenSchemaModal={() => setIsSchemaModalOpen(true)}
+        onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
         shortlistCount={shortlists.length}
         onViewShortlist={() => setScoutTab('shortlist')}
         activeTab={scoutTab}
@@ -242,6 +255,7 @@ export default function HomePage() {
           <TalentDashboard
             talent={talentData}
             onUpdateTalent={handleUpdateTalent}
+            onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
           />
         ) : (
           <ScoutDashboard
@@ -269,6 +283,14 @@ export default function HomePage() {
       <SupabaseConfigModal
         isOpen={isSchemaModalOpen}
         onClose={() => setIsSchemaModalOpen(false)}
+      />
+
+      {/* Avatar / Mascot Selector Modal */}
+      <AvatarSelectorModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentAvatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl}
+        onSelectAvatar={handleUpdateAvatar}
       />
 
     </div>
