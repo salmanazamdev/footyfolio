@@ -6,8 +6,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
-import { ArrowRight, Lock, Mail, User, AlertCircle, AlertTriangle } from 'lucide-react';
-import { isSupabaseConfigured, saveDemoUserSession } from '../../lib/supabase/helpers';
+import { ArrowRight, Lock, Mail, User, AlertCircle, AlertTriangle, UserCheck, Shield, Zap } from 'lucide-react';
+import { isSupabaseConfigured, saveDemoUserSession, startGuestSession } from '../../lib/supabase/helpers';
 import { Logo } from '../../components/Logo';
 
 export default function SignupPage() {
@@ -21,6 +21,11 @@ export default function SignupPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const supabaseConfigured = isSupabaseConfigured();
+
+  const handleGuestLogin = (guestRole: 'talent' | 'scout') => {
+    startGuestSession(guestRole);
+    router.push('/');
+  };
 
   useEffect(() => {
     if (supabaseConfigured) {
@@ -242,6 +247,22 @@ export default function SignupPage() {
         )}
 
         <div className="bg-white py-8 px-6 shadow-sm border border-[#E5E7EB] rounded-2xl sm:rounded-3xl">
+
+          {/* Single Clean Guest Mode Option */}
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                startGuestSession();
+                router.push('/');
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
+            >
+              <Zap className="w-4 h-4 text-[#16A34A] fill-[#16A34A]" />
+              <span>Continue as Guest (No Account Required)</span>
+            </button>
+          </div>
+
           <form className="space-y-4" onSubmit={handleSignup}>
             
             {/* Inline Error Message */}

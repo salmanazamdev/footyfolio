@@ -1,12 +1,13 @@
 import React from 'react';
-import { UserCheck, Shield, Sparkles, ArrowRight, Activity, Award, Search, CheckCircle2 } from 'lucide-react';
+import { UserCheck, Shield, Sparkles, ArrowRight, Activity, Award, Search, CheckCircle2, Zap } from 'lucide-react';
 
 interface LandingHeroProps {
   onSelectRole: (role: 'talent' | 'scout') => void;
   onOpenAuth?: (mode: 'signin' | 'signup', role?: 'talent' | 'scout') => void;
+  onGuestAccess?: (role?: 'talent' | 'scout') => void;
 }
 
-export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAuth }) => {
+export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAuth, onGuestAccess }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12 animate-fade-in">
       <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -66,6 +67,22 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAu
                 </p>
               </div>
             )}
+
+            {/* Single Clean Guest Mode Button */}
+            <div className="mt-4 pt-3 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-[#6B7280] text-xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
+                <span>Want to test first without creating an account?</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onGuestAccess ? onGuestAccess() : onSelectRole('talent')}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] hover:border-[#16A34A] hover:bg-white text-xs font-bold text-[#111827] shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Continue as Guest</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#6B7280]" />
+              </button>
+            </div>
           </div>
 
           {/* Stats Ticker Row */}

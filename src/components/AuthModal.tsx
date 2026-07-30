@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase/client';
-import { isSupabaseConfigured, selectUserRole } from '../lib/supabase/helpers';
-import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X } from 'lucide-react';
+import { isSupabaseConfigured, selectUserRole, startGuestSession } from '../lib/supabase/helpers';
+import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X, Zap } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -22,6 +22,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
   const [role, setRole] = useState<'talent' | 'scout'>(initialRole);
+
+  const handleGuestLogin = (guestRole?: 'talent' | 'scout') => {
+    const { user } = startGuestSession(guestRole);
+    onSuccess(user, guestRole || role);
+    onClose();
+  };
   
   // Sync state when modal is opened or props change
   useEffect(() => {
@@ -203,6 +209,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Modal Body Form */}
         <div className="p-6 sm:p-8 space-y-4">
+
+          {/* Single Clean Guest Access Option */}
+          <div className="pt-2 border-t border-[#E5E7EB]">
+            <button
+              type="button"
+              onClick={() => handleGuestLogin()}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-white border border-[#CBD5E1] hover:border-[#16A34A] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#16A34A] fill-[#16A34A]" />
+              <span>Continue as Guest (No Sign Up Needed)</span>
+            </button>
+          </div>
           
           {!supabaseConfigured && (
             <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2.5">

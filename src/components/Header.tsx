@@ -10,6 +10,7 @@ interface HeaderProps {
   activeScoutName?: string;
   userEmail?: string;
   avatarUrl?: string;
+  isGuest?: boolean;
   onOpenLogMatch?: () => void;
   onOpenSchemaModal?: () => void;
   onOpenAvatarModal?: () => void;
@@ -26,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeScoutName,
   userEmail,
   avatarUrl,
+  isGuest,
   onOpenLogMatch,
   onOpenSchemaModal,
   onOpenAvatarModal,
@@ -170,7 +172,7 @@ export const Header: React.FC<HeaderProps> = ({
                               {userEmail}
                             </p>
                           )}
-                          <div className="mt-1.5 flex items-center gap-1.5">
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                               currentRole === 'talent' 
                                 ? 'bg-[#16A34A]/15 text-[#16A34A]' 
@@ -178,9 +180,34 @@ export const Header: React.FC<HeaderProps> = ({
                             }`}>
                               {currentRole === 'talent' ? 'Player Profile' : 'Scout Account'}
                             </span>
+                            {isGuest && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]">
+                                Saved Locally
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
+
+                      {/* Guest Local Storage & Sync Notice */}
+                      {isGuest && onOpenAuth && (
+                        <div className="mt-3 p-3 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs space-y-2">
+                          <p className="text-[11px] text-[#475569]">
+                            🔒 Operating in <strong>Guest Mode</strong>. All matches & edits are stored in your local browser.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsProfileMenuOpen(false);
+                              onOpenAuth('signup');
+                            }}
+                            className="w-full py-1.5 px-3 rounded-lg bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <LogIn className="w-3.5 h-3.5" />
+                            <span>Sync & Save to Cloud Account</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Menu Actions */}

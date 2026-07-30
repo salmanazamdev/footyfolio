@@ -10,7 +10,7 @@ import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
 import { AvatarSelectorModal } from '../components/AvatarSelectorModal';
 import { createClient } from '../lib/supabase/client';
-import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar } from '../lib/supabase/helpers';
+import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, clearDemoUserSession } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
 import { LogOut, AlertTriangle, UserCheck, Shield } from 'lucide-react';
 
@@ -96,6 +96,7 @@ export default function HomePage() {
 
   const handleLogout = async () => {
     try {
+      clearDemoUserSession();
       if (supabaseConfigured) {
         const supabase = createClient();
         await supabase.auth.signOut();
@@ -240,12 +241,13 @@ export default function HomePage() {
         activeScoutName={scoutData?.name || userProfile?.name}
         userEmail={userProfile?.email}
         avatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl}
+        isGuest={Boolean(userProfile?.id?.startsWith('guest-'))}
         onOpenSchemaModal={() => setIsSchemaModalOpen(true)}
         onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
         shortlistCount={shortlists.length}
         onViewShortlist={() => setScoutTab('shortlist')}
         activeTab={scoutTab}
-        onOpenAuth={() => router.push('/login')}
+        onOpenAuth={(mode) => router.push(mode === 'signup' ? '/signup' : '/login')}
         onLogout={handleLogout}
       />
 

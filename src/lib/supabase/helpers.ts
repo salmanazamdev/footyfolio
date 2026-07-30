@@ -49,6 +49,35 @@ export function clearDemoUserSession(): void {
   } catch (e) {}
 }
 
+export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profile: UserProfileData } {
+  const selectedRole = role || 'talent';
+  const guestId = 'guest-' + (role || 'pending') + '-' + Date.now();
+  
+  const guestUser = {
+    id: guestId,
+    email: 'guest@footyfolio.local',
+    user_metadata: {
+      full_name: role ? (role === 'talent' ? 'Guest Player' : 'Guest Scout') : 'Guest User',
+      role: role || null,
+      isGuest: true,
+    },
+  };
+
+  const guestProfile: UserProfileData = {
+    id: guestId,
+    email: 'guest@footyfolio.local',
+    name: role ? (role === 'talent' ? 'Guest Player' : 'Guest Scout') : 'Guest User',
+    role: selectedRole,
+    age: role === 'talent' ? 19 : undefined,
+    city: 'Local',
+    avatarUrl: role === 'talent' ? 'mascot:mascot-lion' : 'mascot:mascot-eagle',
+    onboardingCompleted: Boolean(role), // If role was chosen, onboarding is complete, else triggers role selection
+  };
+
+  saveDemoUserSession(guestUser, guestProfile);
+  return { user: guestUser, profile: guestProfile };
+}
+
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
   if (isSupabaseConfigured()) {
@@ -395,7 +424,7 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
     return scoutIds;
   };
 
-  if (!isSupabaseConfigured()) {
+  if (!isSupabaseConfigured() || userId.startsWith('guest-') || userId.startsWith('demo-')) {
     const demo = getDemoUserSession();
     const demoTalent = demo?.profile?.role === 'talent' ? demo.profile : null;
     const baseId = demoTalent?.id || userId || 'talent-demo';
