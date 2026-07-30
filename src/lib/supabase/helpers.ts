@@ -54,15 +54,20 @@ export function isGuestId(userId?: string | null): boolean {
   return userId.startsWith('guest-') || userId.startsWith('demo-') || userId === 'demo-id' || userId === 'scout-demo';
 }
 
-export function startGuestSession(role: 'talent' | 'scout' = 'talent'): { user: any; profile: UserProfileData } {
-  const selectedRole = role || 'talent';
-  const guestId = 'guest-' + selectedRole + '-' + Date.now();
+export function startGuestSession(role?: 'talent' | 'scout', forceNew: boolean = false): { user: any; profile: UserProfileData } {
+  const existing = getDemoUserSession();
+  if (existing && !forceNew) {
+    return existing;
+  }
+
+  const selectedRole = role || null;
+  const guestId = 'guest-' + (selectedRole || 'user') + '-' + Date.now();
   
   const guestUser = {
     id: guestId,
     email: 'guest@footyfolio.local',
     user_metadata: {
-      full_name: selectedRole === 'talent' ? 'Hamza Khan (Guest Player)' : 'Coach Tariq (Guest Scout)',
+      full_name: selectedRole ? (selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout') : 'Guest User',
       role: selectedRole,
       isGuest: true,
     },
@@ -71,12 +76,12 @@ export function startGuestSession(role: 'talent' | 'scout' = 'talent'): { user: 
   const guestProfile: UserProfileData = {
     id: guestId,
     email: 'guest@footyfolio.local',
-    name: selectedRole === 'talent' ? 'Hamza Khan (Guest)' : 'Coach Tariq (Guest)',
+    name: selectedRole ? (selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout') : '',
     role: selectedRole,
     age: selectedRole === 'talent' ? 19 : undefined,
-    city: 'Lahore',
-    avatarUrl: selectedRole === 'talent' ? 'mascot:mascot-lion' : 'mascot:mascot-eagle',
-    onboardingCompleted: true,
+    city: 'Karachi',
+    avatarUrl: selectedRole === 'talent' ? 'mascot:mascot-lion' : selectedRole === 'scout' ? 'mascot:mascot-eagle' : undefined,
+    onboardingCompleted: false,
   };
 
   saveDemoUserSession(guestUser, guestProfile);
@@ -327,7 +332,7 @@ export async function saveMatchLog(userId: string, matchData: {
   notes: string;
   matchDate?: string;
 }) {
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -370,7 +375,7 @@ export async function saveScoutingReport(userId: string, report: {
   verdict: string;
   source?: string;
 }) {
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
       const { data, error } = await supabase
@@ -410,7 +415,7 @@ export async function completeOnboarding(userId: string) {
     localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
   }
 
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
       const { error } = await supabase
@@ -445,7 +450,7 @@ export async function saveScoutPreferences(userId: string, data: { name: string;
     localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
   }
 
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
       await supabase
@@ -475,6 +480,7 @@ export async function saveScoutPreferences(userId: string, data: { name: string;
     demo.profile.name = data.name;
     demo.profile.city = data.city;
     demo.profile.role = 'scout';
+    (demo.profile as any).positions = data.positions;
     demo.profile.onboardingCompleted = true;
     saveDemoUserSession(demo.user, demo.profile);
   }

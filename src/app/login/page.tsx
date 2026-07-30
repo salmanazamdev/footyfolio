@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 import { ArrowRight, Lock, Mail, AlertCircle, AlertTriangle, UserCheck, Shield, Zap } from 'lucide-react';
-import { isSupabaseConfigured, saveDemoUserSession, getDemoUserSession, startGuestSession } from '../../lib/supabase/helpers';
+import { isSupabaseConfigured, saveDemoUserSession, getDemoUserSession, startGuestSession, syncGuestDataToSupabaseUser } from '../../lib/supabase/helpers';
 import { Logo } from '../../components/Logo';
 
 export default function LoginPage() {
@@ -20,8 +20,8 @@ export default function LoginPage() {
 
   const supabaseConfigured = isSupabaseConfigured();
 
-  const handleGuestLogin = (guestRole: 'talent' | 'scout' = 'talent') => {
-    startGuestSession(guestRole);
+  const handleGuestLogin = (guestRole?: 'talent' | 'scout') => {
+    startGuestSession(guestRole, true);
     window.location.href = '/';
   };
 
@@ -30,11 +30,12 @@ export default function LoginPage() {
       const supabase = createClient();
       supabase.auth.getSession().then(async ({ data: { session } }) => {
         if (session?.user) {
+          await syncGuestDataToSupabaseUser(session.user.id);
           const { data: profile } = await supabase
             .from('profiles')
             .select('onboarding_completed')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (profile?.onboarding_completed) {
             router.push('/');
