@@ -24,9 +24,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [role, setRole] = useState<'talent' | 'scout'>(initialRole);
 
   const handleGuestLogin = (guestRole?: 'talent' | 'scout') => {
-    const { user } = startGuestSession(guestRole);
-    onSuccess(user, guestRole || role);
+    const selected = guestRole || role || 'talent';
+    const { user } = startGuestSession(selected);
+    onSuccess(user, selected);
     onClose();
+    window.location.href = '/';
   };
   
   // Sync state when modal is opened or props change
@@ -267,6 +269,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               />
             </svg>
             <span>Continue with Google</span>
+          </button>
+
+          {/* Guest Mode Button */}
+          <button
+            type="button"
+            onClick={() => handleGuestLogin()}
+            className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer mt-2"
+          >
+            <Zap className="w-3.5 h-3.5 text-[#16A34A] fill-[#16A34A]" />
+            <span>Continue as Guest</span>
           </button>
 
           {/* Divider */}

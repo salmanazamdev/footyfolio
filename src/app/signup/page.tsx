@@ -22,9 +22,9 @@ export default function SignupPage() {
 
   const supabaseConfigured = isSupabaseConfigured();
 
-  const handleGuestLogin = (guestRole: 'talent' | 'scout') => {
+  const handleGuestLogin = (guestRole: 'talent' | 'scout' = 'talent') => {
     startGuestSession(guestRole);
-    router.push('/');
+    window.location.href = '/';
   };
 
   useEffect(() => {
@@ -248,21 +248,6 @@ export default function SignupPage() {
 
         <div className="bg-white py-8 px-6 shadow-sm border border-[#E5E7EB] rounded-2xl sm:rounded-3xl">
 
-          {/* Single Clean Guest Mode Option */}
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                startGuestSession();
-                router.push('/');
-              }}
-              className="w-full py-3 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
-            >
-              <Zap className="w-4 h-4 text-[#16A34A] fill-[#16A34A]" />
-              <span>Continue as Guest (No Account Required)</span>
-            </button>
-          </div>
-
           <form className="space-y-4" onSubmit={handleSignup}>
             
             {/* Inline Error Message */}
@@ -430,6 +415,18 @@ export default function SignupPage() {
               </>
             )}
           </button>
+
+          {/* Single Action Guest Mode Option Below Google Sign In */}
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => handleGuestLogin('talent')}
+              className="w-full py-3 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
+            >
+              <Zap className="w-4 h-4 text-[#16A34A] fill-[#16A34A]" />
+              <span>Continue as Guest (Instant Access)</span>
+            </button>
+          </div>
 
           {/* Switch to Login */}
           <div className="mt-6 pt-6 border-t border-[#E5E7EB] text-center">

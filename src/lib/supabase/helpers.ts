@@ -49,7 +49,12 @@ export function clearDemoUserSession(): void {
   } catch (e) {}
 }
 
-export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profile: UserProfileData } {
+export function isGuestId(userId?: string | null): boolean {
+  if (!userId) return true;
+  return userId.startsWith('guest-') || userId.startsWith('demo-') || userId === 'demo-id' || userId === 'scout-demo';
+}
+
+export function startGuestSession(role: 'talent' | 'scout' = 'talent'): { user: any; profile: UserProfileData } {
   const selectedRole = role || 'talent';
   const guestId = 'guest-' + selectedRole + '-' + Date.now();
   
@@ -57,7 +62,7 @@ export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profi
     id: guestId,
     email: 'guest@footyfolio.local',
     user_metadata: {
-      full_name: selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout',
+      full_name: selectedRole === 'talent' ? 'Hamza Khan (Guest Player)' : 'Coach Tariq (Guest Scout)',
       role: selectedRole,
       isGuest: true,
     },
@@ -66,7 +71,7 @@ export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profi
   const guestProfile: UserProfileData = {
     id: guestId,
     email: 'guest@footyfolio.local',
-    name: selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout',
+    name: selectedRole === 'talent' ? 'Hamza Khan (Guest)' : 'Coach Tariq (Guest)',
     role: selectedRole,
     age: selectedRole === 'talent' ? 19 : undefined,
     city: 'Lahore',
@@ -78,6 +83,76 @@ export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profi
   return { user: guestUser, profile: guestProfile };
 }
 
+// Sync local guest onboarding & profile data to real Supabase account upon login/signup
+export async function syncGuestDataToSupabaseUser(userId: string) {
+  if (typeof window === 'undefined') return;
+  const demo = getDemoUserSession();
+  if (!demo || !demo.profile) return;
+
+  const guestProfile = demo.profile;
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
+    try {
+      const supabase = createClient();
+      
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      const newRole = existingProfile?.role || guestProfile.role;
+      const newName = (existingProfile?.name && existingProfile.name !== 'User' && existingProfile.name !== 'FootyFolio User') 
+        ? existingProfile.name 
+        : (guestProfile.name && !guestProfile.name.includes('Guest') ? guestProfile.name : (existingProfile?.name || 'FootyFolio User'));
+      const newAge = existingProfile?.age || guestProfile.age;
+      const newCity = existingProfile?.city || guestProfile.city;
+      const newAvatar = existingProfile?.avatar_url || guestProfile.avatarUrl;
+      const newCompleted = Boolean(existingProfile?.onboarding_completed) || guestProfile.onboardingCompleted;
+
+      await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          role: newRole || undefined,
+          name: newName,
+          age: newAge,
+          city: newCity,
+          avatar_url: newAvatar,
+          onboarding_completed: newCompleted,
+        }, { onConflict: 'id' });
+
+      if (newCompleted) {
+        localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
+      }
+
+      // Sync talent position if present in guest session
+      if (newRole === 'talent' && (guestProfile as any).position) {
+        await supabase
+          .from('talent_details')
+          .upsert({
+            profile_id: userId,
+            position: (guestProfile as any).position,
+          }, { onConflict: 'profile_id' });
+      }
+
+      // Sync scout preferences if present in guest session
+      if (newRole === 'scout' && (guestProfile as any).positions) {
+        await supabase
+          .from('scout_preferences')
+          .upsert({
+            profile_id: userId,
+            positions: (guestProfile as any).positions,
+            preferred_city: newCity || 'Karachi',
+          }, { onConflict: 'profile_id' });
+      }
+    } catch (e) {
+      console.warn('Failed to sync guest session to Supabase account:', e);
+    }
+  }
+
+  clearDemoUserSession();
+}
+
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
   if (isSupabaseConfigured()) {
@@ -86,6 +161,9 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
       const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       if (!userError && user) {
+        // Sync local guest onboarding session to Supabase account if guest data exists
+        await syncGuestDataToSupabaseUser(user.id);
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
@@ -137,7 +215,7 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
 
 // 2. Select initial role during onboarding
 export async function selectUserRole(userId: string, role: 'talent' | 'scout', name?: string, avatarUrl?: string) {
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
       const { data: existing } = await supabase
@@ -163,9 +241,12 @@ export async function selectUserRole(userId: string, role: 'talent' | 'scout', n
 
   // Also update demo session if active
   const demo = getDemoUserSession();
-  if (demo && demo.user.id === userId) {
+  if (demo) {
     demo.profile.role = role;
     if (name) demo.profile.name = name;
+    if (!demo.profile.name || demo.profile.name === 'Guest User') {
+      demo.profile.name = role === 'talent' ? 'Guest Player' : 'Guest Scout';
+    }
     saveDemoUserSession(demo.user, demo.profile);
   }
 }
