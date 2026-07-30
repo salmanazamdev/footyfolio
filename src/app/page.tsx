@@ -138,9 +138,10 @@ export default function HomePage() {
 
   const handleToggleShortlist = async (talentId: string) => {
     const userId = userProfile?.id || 'scout-demo';
+    const scoutId = scoutData?.id || userId;
     const isCurrentlyShortlisted = shortlists.some((s) => s.talentProfileId === talentId);
     
-    // 1. Optimistic local React state update
+    // 1. Optimistic shortlists state update
     let updatedShortlists: ShortlistItem[];
     if (isCurrentlyShortlisted) {
       updatedShortlists = shortlists.filter((s) => s.talentProfileId !== talentId);
@@ -148,7 +149,7 @@ export default function HomePage() {
       const talent = talentsFeed.find((t) => t.id === talentId);
       const newItem: ShortlistItem = {
         id: 'sl-' + Date.now(),
-        scoutProfileId: scoutData?.id || userId,
+        scoutProfileId: scoutId,
         scoutName: scoutData?.name || 'Scout',
         talentProfileId: talentId,
         notes: talent ? `Shortlisted ${talent.name} (${talent.position}, ${talent.city})` : 'Shortlisted player',
@@ -158,7 +159,32 @@ export default function HomePage() {
     }
     setShortlists(updatedShortlists);
 
-    // 2. Persist in Supabase and LocalStorage
+    // 2. Update talentsFeed state so talent cards have fresh shortlistedBy
+    setTalentsFeed((prevFeed) =>
+      prevFeed.map((t) => {
+        if (t.id === talentId) {
+          const currentList = t.shortlistedBy || [];
+          const newList = isCurrentlyShortlisted
+            ? currentList.filter((id) => id !== scoutId)
+            : Array.from(new Set([...currentList, scoutId]));
+          return { ...t, shortlistedBy: newList };
+        }
+        return t;
+      })
+    );
+
+    // 3. Update talentData state if current user's profile matches
+    if (talentData) {
+      if (talentData.id === talentId || talentData.userId === talentId) {
+        const currentList = talentData.shortlistedBy || [];
+        const newList = isCurrentlyShortlisted
+          ? currentList.filter((id) => id !== scoutId)
+          : Array.from(new Set([...currentList, scoutId]));
+        setTalentData({ ...talentData, shortlistedBy: newList });
+      }
+    }
+
+    // 4. Persist in Supabase and LocalStorage
     const talent = talentsFeed.find((t) => t.id === talentId);
     await toggleShortlistInSupabase(userId, talentId, isCurrentlyShortlisted, talent?.name);
   };
@@ -175,6 +201,11 @@ export default function HomePage() {
       setShortlists(sls);
     } else {
       setCurrentRole('talent');
+      const userId = userProfile?.id || 'talent-demo';
+      const freshTalent = await getTalentProfileForUser(userId);
+      if (freshTalent) {
+        setTalentData(freshTalent);
+      }
     }
   };
 

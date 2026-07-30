@@ -342,8 +342,69 @@ export async function saveScoutPreferences(userId: string, data: { name: string;
 
 // 8. Fetch Full Talent Profile for Dashboard
 export async function getTalentProfileForUser(userId: string): Promise<TalentProfile | null> {
+  const getLocalShortlistedBy = (talentId: string): string[] => {
+    const scoutIds: string[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('footyfolio_shortlists_') || key === 'footyfolio_shortlists_v1')) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+              const items: ShortlistItem[] = JSON.parse(raw);
+              items.forEach((item) => {
+                if (item.talentProfileId === talentId && !scoutIds.includes(item.scoutProfileId)) {
+                  scoutIds.push(item.scoutProfileId);
+                }
+              });
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    return scoutIds;
+  };
+
   if (!isSupabaseConfigured()) {
-    return INITIAL_TALENT_PROFILES[0];
+    const demo = getDemoUserSession();
+    const demoTalent = demo?.profile?.role === 'talent' ? demo.profile : null;
+    const baseId = demoTalent?.id || userId || 'talent-demo';
+    const localShortlistedBy = getLocalShortlistedBy(baseId);
+
+    return {
+      id: baseId,
+      userId: baseId,
+      name: demoTalent?.name || 'Hamza Khan',
+      age: demoTalent?.age || 19,
+      position: (demoTalent as any)?.position || 'forward',
+      city: demoTalent?.city || 'Lahore',
+      bio: 'Amateur striker playing in the Lahore District League. Quick off the mark, clinical inside the 18-yard box.',
+      avatarUrl: demoTalent?.avatarUrl,
+      preferredFoot: 'Right',
+      matches: [
+        {
+          id: 'm-1',
+          talentProfileId: baseId,
+          goals: 2,
+          assists: 1,
+          minutesPlayed: 90,
+          notes: 'Scored two goals on the counter-attack and provided an assist in a 3-1 win against Model Town FC.',
+          matchDate: '2026-07-20',
+          opponent: 'Model Town FC',
+        }
+      ],
+      latestReport: {
+        id: 'rep-1',
+        talentProfileId: baseId,
+        summary: 'Hamza Khan demonstrated exceptional pace and finishing composure against Model Town FC. His movement off the ball consistently created goalscoring opportunities.',
+        strengths: ['Clinical Finishing', 'Explosive Acceleration', 'Off-ball Movement'],
+        areasToDevelop: ['Weak-foot Consistency', 'Aerial Duels'],
+        verdict: 'High-potential forward prospect for regional academy trials.',
+        generatedAt: new Date().toISOString(),
+      },
+      shortlistedBy: localShortlistedBy,
+      createdAt: new Date().toISOString(),
+    };
   }
 
   const supabase = createClient();
@@ -357,10 +418,11 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
 
     if (!profile) return null;
 
-    const [{ data: details }, { data: matches }, { data: reports }] = await Promise.all([
+    const [{ data: details }, { data: matches }, { data: reports }, { data: shortlistsData }] = await Promise.all([
       supabase.from('talent_details').select('*').eq('profile_id', userId).maybeSingle(),
       supabase.from('matches').select('*').eq('profile_id', userId).order('created_at', { ascending: false }),
       supabase.from('scouting_reports').select('*').eq('profile_id', userId).order('created_at', { ascending: false }).limit(1),
+      supabase.from('shortlists').select('scout_profile_id').eq('talent_profile_id', userId),
     ]);
 
     const formattedMatches: Match[] = (matches || []).map((m: any) => ({
@@ -385,6 +447,14 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
       generatedAt: latestReportRaw.created_at || new Date().toISOString(),
     } : undefined;
 
+    let shortlistedBy: string[] = (shortlistsData || []).map((s: any) => s.scout_profile_id);
+    const localBy = getLocalShortlistedBy(userId);
+    localBy.forEach((sId) => {
+      if (!shortlistedBy.includes(sId)) {
+        shortlistedBy.push(sId);
+      }
+    });
+
     return {
       id: profile.id,
       userId: profile.id,
@@ -397,18 +467,45 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
       preferredFoot: details?.preferred_foot || 'Right',
       matches: formattedMatches,
       latestReport,
+      shortlistedBy,
       createdAt: profile.created_at || new Date().toISOString(),
     };
   } catch (err) {
     console.error('Error fetching talent profile:', err);
-    return INITIAL_TALENT_PROFILES[0];
+    return null;
   }
 }
 
 // 9. Fetch All Talents for Scout Feed
 export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
+  const getLocalShortlistedBy = (talentId: string): string[] => {
+    const scoutIds: string[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('footyfolio_shortlists_') || key === 'footyfolio_shortlists_v1')) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+              const items: ShortlistItem[] = JSON.parse(raw);
+              items.forEach((item) => {
+                if (item.talentProfileId === talentId && !scoutIds.includes(item.scoutProfileId)) {
+                  scoutIds.push(item.scoutProfileId);
+                }
+              });
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    return scoutIds;
+  };
+
   if (!isSupabaseConfigured()) {
-    return INITIAL_TALENT_PROFILES;
+    return INITIAL_TALENT_PROFILES.map((t) => ({
+      ...t,
+      shortlistedBy: getLocalShortlistedBy(t.id),
+    }));
   }
 
   const supabase = createClient();
@@ -420,15 +517,19 @@ export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
       .eq('role', 'talent');
 
     if (error || !profiles || profiles.length === 0) {
-      return INITIAL_TALENT_PROFILES;
+      return INITIAL_TALENT_PROFILES.map((t) => ({
+        ...t,
+        shortlistedBy: getLocalShortlistedBy(t.id),
+      }));
     }
 
     const talentProfiles: TalentProfile[] = await Promise.all(
       profiles.map(async (p) => {
-        const [detailsRes, matchesRes, reportsRes] = await Promise.all([
+        const [detailsRes, matchesRes, reportsRes, shortlistsRes] = await Promise.all([
           supabase.from('talent_details').select('*').eq('profile_id', p.id).maybeSingle(),
           supabase.from('matches').select('*').eq('profile_id', p.id).order('created_at', { ascending: false }),
           supabase.from('scouting_reports').select('*').eq('profile_id', p.id).order('created_at', { ascending: false }).limit(1),
+          supabase.from('shortlists').select('scout_profile_id').eq('talent_profile_id', p.id),
         ]);
 
         const details = detailsRes.data;
@@ -457,6 +558,12 @@ export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
           generatedAt: latestReportRaw.created_at || new Date().toISOString(),
         } : undefined;
 
+        let shortlistedBy: string[] = (shortlistsRes.data || []).map((s: any) => s.scout_profile_id);
+        const localBy = getLocalShortlistedBy(p.id);
+        localBy.forEach((sId) => {
+          if (!shortlistedBy.includes(sId)) shortlistedBy.push(sId);
+        });
+
         return {
           id: p.id,
           userId: p.id,
@@ -469,6 +576,7 @@ export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
           preferredFoot: details?.preferred_foot || 'Right',
           matches: formattedMatches,
           latestReport,
+          shortlistedBy,
           createdAt: p.created_at || new Date().toISOString(),
         };
       })
@@ -479,7 +587,10 @@ export async function getTalentsFeedForScout(): Promise<TalentProfile[]> {
       const existingIds = new Set(talentProfiles.map(t => t.id));
       for (const mockItem of INITIAL_TALENT_PROFILES) {
         if (!existingIds.has(mockItem.id)) {
-          talentProfiles.push(mockItem);
+          talentProfiles.push({
+            ...mockItem,
+            shortlistedBy: getLocalShortlistedBy(mockItem.id),
+          });
         }
       }
     }

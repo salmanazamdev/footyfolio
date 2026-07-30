@@ -113,8 +113,35 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         </div>
       </div>
 
+      {/* Scout Interest Banner Alert */}
+      {talent.shortlistedBy && talent.shortlistedBy.length > 0 && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#D97706]/10 via-[#F59E0B]/10 to-[#16A34A]/10 border border-[#D97706]/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#D97706] text-white flex items-center justify-center shrink-0 font-bold shadow-xs">
+              <BookmarkCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#B45309] font-bold">Scout Notification</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#D97706] text-white text-[10px] font-bold">
+                  {talent.shortlistedBy.length} {talent.shortlistedBy.length === 1 ? 'Scout' : 'Scouts'}
+                </span>
+              </div>
+              <p className="font-sans text-sm font-bold text-[#111827]">
+                🎉 You have been shortlisted by a scout!
+              </p>
+              <p className="text-xs text-[#4B5563] mt-0.5">
+                {talent.shortlistedBy.length === 1 
+                  ? 'A verified scout has saved your player dossier to their shortlist for talent evaluation.' 
+                  : `${talent.shortlistedBy.length} verified scouts have saved your player dossier to their shortlist for talent evaluation.`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Counter Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
           <span className="text-[10px] sm:text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Matches Logged</span>
           <span className="font-sans text-2xl sm:text-3xl font-bold text-[#111827]">{talent.matches.length}</span>
@@ -133,6 +160,16 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
           <span className="text-[10px] sm:text-xs font-mono uppercase text-[#6B7280] font-bold block mb-1">Minutes Played</span>
           <span className="font-sans text-2xl sm:text-3xl font-bold text-[#111827]">{totalMinutes}'</span>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#D97706]/30 bg-[#FFFBEB] shadow-xs col-span-2 sm:col-span-1">
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-[#B45309] font-bold block mb-1">Scout Shortlists</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-sans text-2xl sm:text-3xl font-bold text-[#D97706]">
+              {talent.shortlistedBy?.length || 0}
+            </span>
+            <span className="text-xs text-[#92400E] font-medium">scouts</span>
+          </div>
         </div>
       </div>
 
