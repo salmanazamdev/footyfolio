@@ -189,26 +189,6 @@ export default function HomePage() {
     await toggleShortlistInSupabase(userId, talentId, isCurrentlyShortlisted, talent?.name);
   };
 
-  const handleSwitchRoleToggle = async () => {
-    if (currentRole === 'talent') {
-      setCurrentRole('scout');
-      const userId = userProfile?.id || 'scout-demo';
-      if (talentsFeed.length === 0) {
-        const feed = await getTalentsFeedForScout();
-        setTalentsFeed(feed);
-      }
-      const sls = await getShortlistsForScout(userId);
-      setShortlists(sls);
-    } else {
-      setCurrentRole('talent');
-      const userId = userProfile?.id || 'talent-demo';
-      const freshTalent = await getTalentProfileForUser(userId);
-      if (freshTalent) {
-        setTalentData(freshTalent);
-      }
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center font-sans">
@@ -246,25 +226,25 @@ export default function HomePage() {
         currentRole={currentRole}
         activeTalentName={talentData?.name || userProfile?.name}
         activeScoutName={scoutData?.name || userProfile?.name}
-        onSwitchRole={handleSwitchRoleToggle}
+        userEmail={userProfile?.email}
         onOpenSchemaModal={() => setIsSchemaModalOpen(true)}
         shortlistCount={shortlists.length}
         onViewShortlist={() => setScoutTab('shortlist')}
         activeTab={scoutTab}
       />
 
-      {/* User Account Bar with Working Logout */}
+      {/* User Account Bar */}
       <div className="bg-white border-b border-[#E5E7EB] px-4 lg:px-8 py-2">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2 text-[#6B7280]">
-            <span className="font-semibold text-[#111827]">{userProfile?.name || 'Account Session'}</span>
+            <span className="font-semibold text-[#111827]">{userProfile?.name || talentData?.name || scoutData?.name || 'Account'}</span>
             <span>•</span>
-            <span>{userProfile?.email || 'Logged in'}</span>
+            <span>{userProfile?.email || 'Authenticated User'}</span>
             <span className="hidden sm:inline">•</span>
             <span className={`hidden sm:inline px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
               currentRole === 'talent' ? 'bg-[#16A34A]/10 text-[#16A34A]' : 'bg-[#D97706]/10 text-[#D97706]'
             }`}>
-              {currentRole === 'talent' ? 'Player Profile' : 'Scout Account'}
+              {currentRole === 'talent' ? 'Player Profile' : 'Scout Profile'}
             </span>
           </div>
 
@@ -284,6 +264,7 @@ export default function HomePage() {
         {currentRole === 'talent' && talentData ? (
           <TalentDashboard
             talent={talentData}
+            userEmail={userProfile?.email}
             onUpdateTalent={handleUpdateTalent}
           />
         ) : (

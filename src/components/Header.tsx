@@ -8,7 +8,6 @@ interface HeaderProps {
   activeTalentName?: string;
   activeScoutName?: string;
   userEmail?: string;
-  onSwitchRole: () => void;
   onOpenLogMatch?: () => void;
   onOpenSchemaModal: () => void;
   shortlistCount?: number;
@@ -23,7 +22,6 @@ export const Header: React.FC<HeaderProps> = ({
   activeTalentName,
   activeScoutName,
   userEmail,
-  onSwitchRole,
   onOpenLogMatch,
   onOpenSchemaModal,
   shortlistCount = 0,
@@ -38,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
         
         {/* Brand Logo & Wordmark */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          <div className="cursor-pointer group" onClick={onSwitchRole}>
+          <div className="group">
             <Logo size="md" />
           </div>
         </div>
@@ -74,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Role badge */}
               <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#16A34A]/10 border border-[#16A34A]/20 text-[#16A34A] text-xs font-semibold">
                 <UserCheck className="w-3.5 h-3.5" />
-                <span>Player: {activeTalentName || 'Talent'}</span>
+                <span>Player Profile</span>
               </div>
 
               {onOpenLogMatch && (
@@ -95,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Role badge */}
               <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D97706]/10 border border-[#D97706]/20 text-[#D97706] text-xs font-semibold">
                 <Shield className="w-3.5 h-3.5" />
-                <span>Scout Mode</span>
+                <span>Scout Profile</span>
               </div>
 
               {onViewShortlist && (
@@ -118,18 +116,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
             </>
-          )}
-
-          {/* Logout Button if Logged In */}
-          {currentRole !== null && (
-            <button
-              onClick={onSwitchRole}
-              id="btn-header-switch-role"
-              className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-xl text-xs font-medium text-[#6B7280] hover:text-[#111827] hover:bg-[#F1F5F9] border border-[#E5E7EB] transition-all cursor-pointer shrink-0"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Switch View</span>
-            </button>
           )}
 
           {/* Logout Button if Logged In */}

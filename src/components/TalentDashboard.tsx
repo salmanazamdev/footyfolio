@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { TalentProfile, Match, ScoutingReport } from '../types';
 import { ScoutingReportCard } from './ScoutingReportCard';
 import { LogMatchModal } from './LogMatchModal';
-import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar, RefreshCw } from 'lucide-react';
+import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar, RefreshCw, Mail } from 'lucide-react';
 
 interface TalentDashboardProps {
   talent: TalentProfile;
+  userEmail?: string;
   onUpdateTalent: (updated: TalentProfile) => void;
 }
 
-export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpdateTalent }) => {
+export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, userEmail, onUpdateTalent }) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -82,7 +83,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
           </div>
 
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
                 {talent.position}
               </span>
@@ -90,6 +91,12 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
                 <MapPin className="w-3.5 h-3.5 text-[#FEF08A]" />
                 {talent.city}
               </span>
+              {userEmail && (
+                <span className="text-xs text-white/90 flex items-center gap-1 font-medium bg-white/10 px-2.5 py-0.5 rounded-full border border-white/20">
+                  <Mail className="w-3.5 h-3.5 text-white/80" />
+                  {userEmail}
+                </span>
+              )}
             </div>
             <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white">
               {talent.name}
