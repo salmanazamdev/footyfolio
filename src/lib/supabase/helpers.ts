@@ -1,5 +1,5 @@
 import { createClient } from './client';
-import { TalentProfile, ScoutProfile, Match, ScoutingReport } from '../../types';
+import { TalentProfile, ScoutProfile, Match, ScoutingReport, ShortlistItem } from '../../types';
 import { INITIAL_TALENT_PROFILES } from '../../data/mockData';
 
 export function isSupabaseConfigured(): boolean {
@@ -545,5 +545,112 @@ export async function getScoutPreferences(userId: string): Promise<ScoutProfile 
   } catch (err) {
     console.error('Error fetching scout preferences:', err);
     return null;
+  }
+}
+
+// 11. Fetch Shortlists for Scout
+export async function getShortlistsForScout(scoutUserId: string): Promise<ShortlistItem[]> {
+  const localKey = 'footyfolio_shortlists_' + scoutUserId;
+  let localItems: ShortlistItem[] = [];
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(localKey);
+      if (raw) localItems = JSON.parse(raw);
+    } catch (e) {}
+  }
+
+  if (!isSupabaseConfigured()) {
+    return localItems;
+  }
+
+  const supabase = createClient();
+  try {
+    const { data, error } = await supabase
+      .from('shortlists')
+      .select('*')
+      .eq('scout_profile_id', scoutUserId);
+
+    if (error || !data) {
+      return localItems;
+    }
+
+    const fetched: ShortlistItem[] = data.map((item: any) => ({
+      id: item.id,
+      scoutProfileId: item.scout_profile_id,
+      scoutName: 'Scout',
+      talentProfileId: item.talent_profile_id,
+      notes: item.notes || 'Shortlisted player',
+      createdAt: item.created_at || new Date().toISOString(),
+    }));
+
+    // Sync to local storage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(localKey, JSON.stringify(fetched));
+    }
+
+    return fetched;
+  } catch (err) {
+    console.error('Error fetching shortlists from Supabase:', err);
+    return localItems;
+  }
+}
+
+// 12. Toggle Shortlist in Supabase & LocalStorage
+export async function toggleShortlistInSupabase(
+  scoutUserId: string,
+  talentId: string,
+  isCurrentlyShortlisted: boolean,
+  talentName?: string
+): Promise<void> {
+  const localKey = 'footyfolio_shortlists_' + scoutUserId;
+  if (typeof window !== 'undefined') {
+    try {
+      let currentLocal: ShortlistItem[] = [];
+      const raw = localStorage.getItem(localKey);
+      if (raw) currentLocal = JSON.parse(raw);
+
+      if (isCurrentlyShortlisted) {
+        currentLocal = currentLocal.filter((s) => s.talentProfileId !== talentId);
+      } else {
+        const newItem: ShortlistItem = {
+          id: 'sl-' + Date.now(),
+          scoutProfileId: scoutUserId,
+          scoutName: 'Scout',
+          talentProfileId: talentId,
+          notes: `Shortlisted ${talentName || 'Player'}`,
+          createdAt: new Date().toISOString(),
+        };
+        currentLocal = [newItem, ...currentLocal.filter((s) => s.talentProfileId !== talentId)];
+      }
+      localStorage.setItem(localKey, JSON.stringify(currentLocal));
+    } catch (e) {
+      console.warn('LocalStorage shortlist update failed:', e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const supabase = createClient();
+    try {
+      if (isCurrentlyShortlisted) {
+        await supabase
+          .from('shortlists')
+          .delete()
+          .eq('scout_profile_id', scoutUserId)
+          .eq('talent_profile_id', talentId);
+      } else {
+        await supabase
+          .from('shortlists')
+          .upsert(
+            {
+              scout_profile_id: scoutUserId,
+              talent_profile_id: talentId,
+              notes: `Shortlisted ${talentName || 'Player'}`,
+            },
+            { onConflict: 'scout_profile_id,talent_profile_id' }
+          );
+      }
+    } catch (err) {
+      console.error('Supabase shortlist toggle error:', err);
+    }
   }
 }

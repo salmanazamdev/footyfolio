@@ -9,7 +9,7 @@ import { TalentDashboard } from '../components/TalentDashboard';
 import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
 import { createClient } from '../lib/supabase/client';
-import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport } from '../lib/supabase/helpers';
+import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
 import { LogOut, AlertTriangle, UserCheck, Shield } from 'lucide-react';
 
@@ -44,6 +44,8 @@ export default function HomePage() {
           if (mockTalent) setTalentData(mockTalent);
           const feed = await getTalentsFeedForScout();
           setTalentsFeed(feed);
+          const sls = await getShortlistsForScout('scout-demo');
+          setShortlists(sls);
           setLoading(false);
           return;
         }
@@ -77,6 +79,8 @@ export default function HomePage() {
           }
           const feed = await getTalentsFeedForScout();
           setTalentsFeed(feed);
+          const sls = await getShortlistsForScout(user.id);
+          setShortlists(sls);
         }
       } catch (err) {
         console.error('Error initializing dashboard:', err);
@@ -132,30 +136,43 @@ export default function HomePage() {
     }
   };
 
-  const handleToggleShortlist = (talentId: string) => {
-    const existing = shortlists.find((s) => s.talentProfileId === talentId);
-    if (existing) {
-      setShortlists(shortlists.filter((s) => s.talentProfileId !== talentId));
+  const handleToggleShortlist = async (talentId: string) => {
+    const userId = userProfile?.id || 'scout-demo';
+    const isCurrentlyShortlisted = shortlists.some((s) => s.talentProfileId === talentId);
+    
+    // 1. Optimistic local React state update
+    let updatedShortlists: ShortlistItem[];
+    if (isCurrentlyShortlisted) {
+      updatedShortlists = shortlists.filter((s) => s.talentProfileId !== talentId);
     } else {
       const talent = talentsFeed.find((t) => t.id === talentId);
       const newItem: ShortlistItem = {
         id: 'sl-' + Date.now(),
-        scoutProfileId: scoutData?.id || 'scout-1',
+        scoutProfileId: scoutData?.id || userId,
         scoutName: scoutData?.name || 'Scout',
         talentProfileId: talentId,
         notes: talent ? `Shortlisted ${talent.name} (${talent.position}, ${talent.city})` : 'Shortlisted player',
         createdAt: new Date().toISOString(),
       };
-      setShortlists([newItem, ...shortlists]);
+      updatedShortlists = [newItem, ...shortlists];
     }
+    setShortlists(updatedShortlists);
+
+    // 2. Persist in Supabase and LocalStorage
+    const talent = talentsFeed.find((t) => t.id === talentId);
+    await toggleShortlistInSupabase(userId, talentId, isCurrentlyShortlisted, talent?.name);
   };
 
-  const handleSwitchRoleToggle = () => {
+  const handleSwitchRoleToggle = async () => {
     if (currentRole === 'talent') {
       setCurrentRole('scout');
+      const userId = userProfile?.id || 'scout-demo';
       if (talentsFeed.length === 0) {
-        getTalentsFeedForScout().then(setTalentsFeed);
+        const feed = await getTalentsFeedForScout();
+        setTalentsFeed(feed);
       }
+      const sls = await getShortlistsForScout(userId);
+      setShortlists(sls);
     } else {
       setCurrentRole('talent');
     }
