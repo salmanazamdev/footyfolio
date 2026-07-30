@@ -563,6 +563,11 @@ export async function getShortlistsForScout(scoutUserId: string): Promise<Shortl
     return localItems;
   }
 
+  const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (!isUuid(scoutUserId)) {
+    return localItems;
+  }
+
   const supabase = createClient();
   try {
     const { data, error } = await supabase
@@ -571,6 +576,7 @@ export async function getShortlistsForScout(scoutUserId: string): Promise<Shortl
       .eq('scout_profile_id', scoutUserId);
 
     if (error || !data) {
+      if (error) console.warn('Supabase getShortlists error:', error.message);
       return localItems;
     }
 
@@ -629,16 +635,64 @@ export async function toggleShortlistInSupabase(
   }
 
   if (isSupabaseConfigured()) {
+    const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    
+    if (!isUuid(scoutUserId) || !isUuid(talentId)) {
+      console.warn('Cannot persist shortlist to Supabase: scoutUserId or talentId is not a valid UUID.', { scoutUserId, talentId });
+      return;
+    }
+
     const supabase = createClient();
     try {
-      if (isCurrentlyShortlisted) {
+      // 1. Ensure scout profile exists in public.profiles table
+      const { data: scoutProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', scoutUserId)
+        .maybeSingle();
+
+      if (!scoutProfile) {
         await supabase
+          .from('profiles')
+          .upsert({
+            id: scoutUserId,
+            role: 'scout',
+            name: 'Scout',
+            onboarding_completed: true
+          }, { onConflict: 'id' });
+      }
+
+      // 2. Ensure talent profile exists in public.profiles table
+      const { data: talentProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', talentId)
+        .maybeSingle();
+
+      if (!talentProfile) {
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: talentId,
+            role: 'talent',
+            name: talentName || 'Player',
+            onboarding_completed: true
+          }, { onConflict: 'id' });
+      }
+
+      // 3. Perform toggle in public.shortlists table
+      if (isCurrentlyShortlisted) {
+        const { error: deleteErr } = await supabase
           .from('shortlists')
           .delete()
           .eq('scout_profile_id', scoutUserId)
           .eq('talent_profile_id', talentId);
+
+        if (deleteErr) {
+          console.error('Error deleting shortlist from Supabase:', deleteErr);
+        }
       } else {
-        await supabase
+        const { error: insertErr } = await supabase
           .from('shortlists')
           .upsert(
             {
@@ -648,9 +702,13 @@ export async function toggleShortlistInSupabase(
             },
             { onConflict: 'scout_profile_id,talent_profile_id' }
           );
+
+        if (insertErr) {
+          console.error('Error upserting shortlist to Supabase:', insertErr);
+        }
       }
     } catch (err) {
-      console.error('Supabase shortlist toggle error:', err);
+      console.error('Supabase shortlist toggle exception:', err);
     }
   }
 }

@@ -122,5 +122,7 @@ CREATE POLICY "Shortlists viewable by scout owner"
   ON public.shortlists FOR SELECT TO authenticated USING (auth.uid() = scout_profile_id);
 
 CREATE POLICY "Scouts can manage own shortlists" 
-  ON public.shortlists FOR ALL TO authenticated USING (auth.uid() = scout_profile_id);
+  ON public.shortlists FOR ALL TO authenticated 
+  USING (auth.uid() = scout_profile_id)
+  WITH CHECK (auth.uid() = scout_profile_id);
 `;
