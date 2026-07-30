@@ -51,14 +51,14 @@ export function clearDemoUserSession(): void {
 
 export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profile: UserProfileData } {
   const selectedRole = role || 'talent';
-  const guestId = 'guest-' + (role || 'pending') + '-' + Date.now();
+  const guestId = 'guest-' + selectedRole + '-' + Date.now();
   
   const guestUser = {
     id: guestId,
     email: 'guest@footyfolio.local',
     user_metadata: {
-      full_name: role ? (role === 'talent' ? 'Guest Player' : 'Guest Scout') : 'Guest User',
-      role: role || null,
+      full_name: selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout',
+      role: selectedRole,
       isGuest: true,
     },
   };
@@ -66,12 +66,12 @@ export function startGuestSession(role?: 'talent' | 'scout'): { user: any; profi
   const guestProfile: UserProfileData = {
     id: guestId,
     email: 'guest@footyfolio.local',
-    name: role ? (role === 'talent' ? 'Guest Player' : 'Guest Scout') : 'Guest User',
+    name: selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout',
     role: selectedRole,
-    age: role === 'talent' ? 19 : undefined,
-    city: 'Local',
-    avatarUrl: role === 'talent' ? 'mascot:mascot-lion' : 'mascot:mascot-eagle',
-    onboardingCompleted: Boolean(role), // If role was chosen, onboarding is complete, else triggers role selection
+    age: selectedRole === 'talent' ? 19 : undefined,
+    city: 'Lahore',
+    avatarUrl: selectedRole === 'talent' ? 'mascot:mascot-lion' : 'mascot:mascot-eagle',
+    onboardingCompleted: true,
   };
 
   saveDemoUserSession(guestUser, guestProfile);

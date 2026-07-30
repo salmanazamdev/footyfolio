@@ -10,7 +10,7 @@ import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
 import { AvatarSelectorModal } from '../components/AvatarSelectorModal';
 import { createClient } from '../lib/supabase/client';
-import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, clearDemoUserSession } from '../lib/supabase/helpers';
+import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, clearDemoUserSession, startGuestSession } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
 import { LogOut, AlertTriangle, UserCheck, Shield } from 'lucide-react';
 
@@ -39,49 +39,41 @@ export default function HomePage() {
       setLoading(true);
 
       try {
-        if (!supabaseConfigured) {
-          // Fallback if Supabase credentials are missing
-          setCurrentRole('talent');
-          const mockTalent = await getTalentProfileForUser('demo-id');
-          if (mockTalent) setTalentData(mockTalent);
-          const feed = await getTalentsFeedForScout();
-          setTalentsFeed(feed);
-          const sls = await getShortlistsForScout('scout-demo');
-          setShortlists(sls);
-          setLoading(false);
-          return;
-        }
-
         const { user, profile } = await getCurrentUserProfile();
 
-        if (!user) {
-          router.push('/login');
-          return;
+        let activeUser = user;
+        let activeProfile = profile;
+
+        // If no user/profile exists (first time visit or logged out), auto-create guest session for seamless preview
+        if (!activeUser || !activeProfile) {
+          const guest = startGuestSession('talent');
+          activeUser = guest.user;
+          activeProfile = guest.profile;
         }
 
-        setUserProfile(profile);
+        setUserProfile(activeProfile);
 
-        if (!profile || !profile.onboardingCompleted) {
+        if (!activeProfile.onboardingCompleted) {
           router.push('/onboarding');
           return;
         }
 
-        const userRole = profile.role || 'talent';
+        const userRole = activeProfile.role || 'talent';
         setCurrentRole(userRole);
 
         if (userRole === 'talent') {
-          const tProfile = await getTalentProfileForUser(user.id);
+          const tProfile = await getTalentProfileForUser(activeUser.id);
           if (tProfile) {
             setTalentData(tProfile);
           }
         } else {
-          const sProfile = await getScoutPreferences(user.id);
+          const sProfile = await getScoutPreferences(activeUser.id);
           if (sProfile) {
             setScoutData(sProfile);
           }
           const feed = await getTalentsFeedForScout();
           setTalentsFeed(feed);
-          const sls = await getShortlistsForScout(user.id);
+          const sls = await getShortlistsForScout(activeUser.id);
           setShortlists(sls);
         }
       } catch (err) {
