@@ -227,44 +227,20 @@ export default function HomePage() {
         activeTalentName={talentData?.name || userProfile?.name}
         activeScoutName={scoutData?.name || userProfile?.name}
         userEmail={userProfile?.email}
+        avatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl}
         onOpenSchemaModal={() => setIsSchemaModalOpen(true)}
         shortlistCount={shortlists.length}
         onViewShortlist={() => setScoutTab('shortlist')}
         activeTab={scoutTab}
+        onOpenAuth={() => router.push('/login')}
+        onLogout={handleLogout}
       />
-
-      {/* User Account Bar */}
-      <div className="bg-white border-b border-[#E5E7EB] px-4 lg:px-8 py-2">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-2 text-[#6B7280]">
-            <span className="font-semibold text-[#111827]">{userProfile?.name || talentData?.name || scoutData?.name || 'Account'}</span>
-            <span>•</span>
-            <span>{userProfile?.email || 'Authenticated User'}</span>
-            <span className="hidden sm:inline">•</span>
-            <span className={`hidden sm:inline px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
-              currentRole === 'talent' ? 'bg-[#16A34A]/10 text-[#16A34A]' : 'bg-[#D97706]/10 text-[#D97706]'
-            }`}>
-              {currentRole === 'talent' ? 'Player Profile' : 'Scout Profile'}
-            </span>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            id="btn-header-logout"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-red-600 hover:bg-red-50 font-semibold transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </div>
 
       {/* Main Dashboard Views */}
       <main className="flex-1">
         {currentRole === 'talent' && talentData ? (
           <TalentDashboard
             talent={talentData}
-            userEmail={userProfile?.email}
             onUpdateTalent={handleUpdateTalent}
           />
         ) : (

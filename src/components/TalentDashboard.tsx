@@ -6,11 +6,10 @@ import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar
 
 interface TalentDashboardProps {
   talent: TalentProfile;
-  userEmail?: string;
   onUpdateTalent: (updated: TalentProfile) => void;
 }
 
-export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, userEmail, onUpdateTalent }) => {
+export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpdateTalent }) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -91,12 +90,6 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, userEm
                 <MapPin className="w-3.5 h-3.5 text-[#FEF08A]" />
                 {talent.city}
               </span>
-              {userEmail && (
-                <span className="text-xs text-white/90 flex items-center gap-1 font-medium bg-white/10 px-2.5 py-0.5 rounded-full border border-white/20">
-                  <Mail className="w-3.5 h-3.5 text-white/80" />
-                  {userEmail}
-                </span>
-              )}
             </div>
             <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white">
               {talent.name}
