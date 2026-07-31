@@ -197,7 +197,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn font-sans">
-      <div className="bg-white w-full max-w-md rounded-2xl sm:rounded-3xl shadow-xl border border-[#E5E7EB] overflow-hidden relative">
+      <div className="bg-white w-full max-w-md max-h-[90vh] flex flex-col rounded-2xl sm:rounded-3xl shadow-xl border border-[#E5E7EB] overflow-hidden relative">
         
         {/* Close Button */}
         <button
@@ -208,7 +208,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </button>
 
         {/* Modal Header */}
-        <div className="p-6 sm:p-8 bg-linear-to-b from-[#F8FAFC] to-white border-b border-[#E5E7EB] text-center">
+        <div className="p-6 sm:p-8 bg-linear-to-b from-[#F8FAFC] to-white border-b border-[#E5E7EB] text-center shrink-0">
           <div className="inline-flex items-baseline mb-2">
             <span className="text-3xl font-bold tracking-tight text-[#111827]">footyfolio</span>
             <span className="text-[#D97706] text-3xl font-black leading-none ml-[1px]">.</span>
@@ -239,20 +239,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Body Form */}
-        <div className="p-6 sm:p-8 space-y-4">
-
-          {/* Single Clean Guest Access Option */}
-          <div className="pt-2 border-t border-[#E5E7EB]">
-            <button
-              type="button"
-              onClick={() => handleGuestLogin()}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-white border border-[#CBD5E1] hover:border-[#16A34A] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
-            >
-              <Zap className="w-3.5 h-3.5 text-[#16A34A] fill-[#16A34A]" />
-              <span>Continue as Guest (No Sign Up Needed)</span>
-            </button>
-          </div>
+        {/* Modal Body Form - Scrollable */}
+        <div className="p-6 sm:p-8 space-y-4 overflow-y-auto flex-1">
           
           {!supabaseConfigured && (
             <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2.5">
@@ -301,14 +289,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <span>Continue with Google</span>
           </button>
 
-          {/* Guest Mode Button */}
+          {/* Guest Mode Option */}
           <button
             type="button"
             onClick={() => handleGuestLogin()}
-            className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer mt-2"
+            className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <Zap className="w-3.5 h-3.5 text-[#16A34A] fill-[#16A34A]" />
-            <span>Continue as Guest</span>
+            <span>Continue as Guest (No Sign Up Needed)</span>
           </button>
 
           {/* Divider */}

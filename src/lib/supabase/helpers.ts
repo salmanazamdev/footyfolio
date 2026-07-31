@@ -186,6 +186,64 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
   clearDemoUserSession();
 }
 
+/**
+ * Directly triggers Google Sign-In and auto-syncs local storage guest data
+ */
+export async function triggerGoogleAuthSync(preferredRole: 'talent' | 'scout' = 'talent') {
+  if (typeof window === 'undefined') return;
+
+  if (isSupabaseConfigured()) {
+    const supabase = createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    const redirectUrl = `${siteUrl.replace(/\/$/, '')}/auth/callback`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+
+    if (error) {
+      console.error('Google Auth Error:', error.message);
+      alert('Google Auth Error: ' + error.message);
+      return;
+    }
+
+    if (data?.url) {
+      window.location.href = data.url;
+    }
+  } else {
+    // Demo Mode: simulate instant Google OAuth sign-in & sync guest data
+    const existingDemo = getDemoUserSession();
+    const demoId = 'google-user-' + Date.now();
+    await syncGuestDataToSupabaseUser(demoId);
+
+    const guestProfile = existingDemo?.profile;
+    const demoUser = {
+      id: demoId,
+      email: 'google.player@gmail.com',
+      user_metadata: { full_name: guestProfile?.name && !guestProfile.name.startsWith('Guest') ? guestProfile.name : 'Google Player' },
+    };
+    const demoProfile = {
+      id: demoId,
+      email: 'google.player@gmail.com',
+      name: guestProfile?.name && !guestProfile.name.startsWith('Guest') ? guestProfile.name : 'Google Player',
+      role: guestProfile?.role || preferredRole,
+      age: guestProfile?.age || 19,
+      city: guestProfile?.city || 'Karachi',
+      avatarUrl: guestProfile?.avatarUrl,
+      onboardingCompleted: true,
+    };
+    saveDemoUserSession(demoUser, demoProfile);
+    window.location.href = '/';
+  }
+}
+
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
   // Check local demo / guest session FIRST if active
