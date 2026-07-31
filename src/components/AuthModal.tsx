@@ -290,14 +290,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
 
           {/* Guest Mode Option */}
-          <button
-            type="button"
-            onClick={() => handleGuestLogin()}
-            className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
-          >
-            <Zap className="w-3.5 h-3.5 text-[#16A34A] fill-[#16A34A]" />
-            <span>Continue as Guest (No Sign Up Needed)</span>
-          </button>
+          <div className="text-center pt-1">
+            <button
+              type="button"
+              onClick={() => handleGuestLogin()}
+              className="text-xs text-[#6B7280] hover:text-[#111827] underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Continue as Guest (No Sign Up Needed)
+            </button>
+          </div>
 
           {/* Divider */}
           <div className="relative flex items-center justify-center my-1">

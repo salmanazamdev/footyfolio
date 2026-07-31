@@ -19,6 +19,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [guestBannerInfo, setGuestBannerInfo] = useState<{ name: string; matchCount: number } | null>(null);
 
   const supabaseConfigured = isSupabaseConfigured();
 
@@ -28,7 +29,24 @@ export default function SignupPage() {
   };
 
   useEffect(() => {
-    if (getDemoUserSession()) return;
+    // Check for guest session to display informational banner
+    const demo = getDemoUserSession();
+    if (demo && demo.profile) {
+      const guestId = demo.user?.id || 'demo_guest_talent';
+      let matchCount = 0;
+      try {
+        const matchesRaw = localStorage.getItem('footyfolio_user_matches_' + guestId) || localStorage.getItem('footyfolio_user_matches_demo_guest_talent');
+        if (matchesRaw) {
+          matchCount = JSON.parse(matchesRaw).length;
+        }
+      } catch (e) {}
+
+      setGuestBannerInfo({
+        name: demo.profile.name || 'Guest User',
+        matchCount,
+      });
+      return;
+    }
 
     if (supabaseConfigured) {
       const supabase = createClient();
@@ -249,6 +267,15 @@ export default function SignupPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         
+        {guestBannerInfo && (
+          <div className="mb-4 p-3.5 rounded-2xl bg-[#16A34A]/10 border border-[#16A34A]/30 text-[#15803D] text-xs font-medium flex items-center gap-2.5 shadow-2xs">
+            <Zap className="w-4 h-4 text-[#16A34A] shrink-0 fill-[#16A34A]" />
+            <span>
+              We'll bring your guest data — <strong>{guestBannerInfo.name}</strong>, <strong>{guestBannerInfo.matchCount}</strong> match{guestBannerInfo.matchCount === 1 ? '' : 'es'} logged — into your new account.
+            </span>
+          </div>
+        )}
+
         {!supabaseConfigured && (
           <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />

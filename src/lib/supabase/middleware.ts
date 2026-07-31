@@ -48,49 +48,26 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Check for active guest session cookie
-  const guestCookie = request.cookies.get('footyfolio_guest')?.value;
-  let guestData: { id?: string; onboardingCompleted?: boolean; role?: string } | null = null;
-  if (guestCookie) {
-    try {
-      guestData = JSON.parse(decodeURIComponent(guestCookie));
-    } catch (e) {
-      guestData = { id: 'guest-user', onboardingCompleted: true };
-    }
-  }
-
-  const isGuestLoggedIn = !!(guestData && guestData.id);
-  const isAuthenticated = !!user || isGuestLoggedIn;
-
-  // Not logged in (neither Supabase user nor guest session)
-  if (!isAuthenticated) {
-    if (!isAuthRoute) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      return NextResponse.redirect(url);
-    }
+  // If no real Supabase user is logged in, pass through (client side will check localStorage guest session)
+  if (!user) {
     return supabaseResponse;
   }
 
-  // User or Guest is logged in -> check onboarding completion status
+  // Real Supabase User is logged in -> check onboarding completion status
   let onboardingCompleted = false;
 
-  if (user) {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed, role')
-        .eq('id', user.id)
-        .maybeSingle();
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed, role')
+      .eq('id', user.id)
+      .maybeSingle();
 
-      if (profile) {
-        onboardingCompleted = !!profile.onboarding_completed;
-      }
-    } catch (err) {
-      console.error('Middleware profile check error:', err);
+    if (profile) {
+      onboardingCompleted = !!profile.onboarding_completed;
     }
-  } else if (isGuestLoggedIn) {
-    onboardingCompleted = !!guestData?.onboardingCompleted;
+  } catch (err) {
+    console.error('Middleware profile check error:', err);
   }
 
   if (isAuthRoute) {

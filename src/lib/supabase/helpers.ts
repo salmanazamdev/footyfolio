@@ -37,12 +37,6 @@ export function saveDemoUserSession(user: any, profile: UserProfileData): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify({ user, profile }));
-    const cookiePayload = encodeURIComponent(JSON.stringify({
-      id: user.id,
-      onboardingCompleted: !!profile.onboardingCompleted,
-      role: profile.role || null
-    }));
-    document.cookie = `footyfolio_guest=${cookiePayload}; path=/; max-age=2592000; SameSite=Lax`;
   } catch (e) {
     console.error('Failed to save demo session to localStorage:', e);
   }
@@ -52,7 +46,6 @@ export function clearDemoUserSession(): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(DEMO_SESSION_KEY);
-    document.cookie = 'footyfolio_guest=; path=/; max-age=0; SameSite=Lax';
   } catch (e) {}
 }
 
@@ -186,72 +179,8 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
   clearDemoUserSession();
 }
 
-/**
- * Directly triggers Google Sign-In and auto-syncs local storage guest data
- */
-export async function triggerGoogleAuthSync(preferredRole: 'talent' | 'scout' = 'talent') {
-  if (typeof window === 'undefined') return;
-
-  if (isSupabaseConfigured()) {
-    const supabase = createClient();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    const redirectUrl = `${siteUrl.replace(/\/$/, '')}/auth/callback`;
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
-    });
-
-    if (error) {
-      console.error('Google Auth Error:', error.message);
-      alert('Google Auth Error: ' + error.message);
-      return;
-    }
-
-    if (data?.url) {
-      window.location.href = data.url;
-    }
-  } else {
-    // Demo Mode: simulate instant Google OAuth sign-in & sync guest data
-    const existingDemo = getDemoUserSession();
-    const demoId = 'google-user-' + Date.now();
-    await syncGuestDataToSupabaseUser(demoId);
-
-    const guestProfile = existingDemo?.profile;
-    const demoUser = {
-      id: demoId,
-      email: 'google.player@gmail.com',
-      user_metadata: { full_name: guestProfile?.name && !guestProfile.name.startsWith('Guest') ? guestProfile.name : 'Google Player' },
-    };
-    const demoProfile = {
-      id: demoId,
-      email: 'google.player@gmail.com',
-      name: guestProfile?.name && !guestProfile.name.startsWith('Guest') ? guestProfile.name : 'Google Player',
-      role: guestProfile?.role || preferredRole,
-      age: guestProfile?.age || 19,
-      city: guestProfile?.city || 'Karachi',
-      avatarUrl: guestProfile?.avatarUrl,
-      onboardingCompleted: true,
-    };
-    saveDemoUserSession(demoUser, demoProfile);
-    window.location.href = '/';
-  }
-}
-
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
-  // Check local demo / guest session FIRST if active
-  const demoSession = getDemoUserSession();
-  if (demoSession) {
-    return demoSession;
-  }
-
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -296,15 +225,15 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
           },
         };
       }
-    } catch (e) {
-      console.warn('Supabase auth check failed, checking local demo session...', e);
+    } catch (err) {
+      console.error('Failed to get Supabase user profile:', err);
     }
   }
 
-  // Fallback to local demo session if Supabase is unconfigured or unavailable
-  const fallbackDemo = getDemoUserSession();
-  if (fallbackDemo) {
-    return fallbackDemo;
+  // Fallback to local demo / guest session if active
+  const demoSession = getDemoUserSession();
+  if (demoSession) {
+    return demoSession;
   }
 
   return { user: null, profile: null };
