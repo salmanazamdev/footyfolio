@@ -10,6 +10,7 @@ import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
 import { AvatarSelectorModal } from '../components/AvatarSelectorModal';
 import { AuthModal } from '../components/AuthModal';
+import { LandingPage } from '../components/LandingPage';
 import { createClient } from '../lib/supabase/client';
 import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, clearDemoUserSession, startGuestSession } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
@@ -43,10 +44,10 @@ export default function HomePage() {
       try {
         const { user, profile } = await getCurrentUserProfile();
 
-        // If no real user and no guest session exists in localStorage, redirect to /login
+        // If no real user and no guest session exists in localStorage, show LandingPage
         if (!user || !profile) {
+          setUserProfile(null);
           setLoading(false);
-          router.push('/login');
           return;
         }
 
@@ -78,8 +79,8 @@ export default function HomePage() {
         }
       } catch (err) {
         console.error('Error initializing dashboard:', err);
+        setUserProfile(null);
         setLoading(false);
-        router.push('/login');
         return;
       } finally {
         setLoading(false);
@@ -206,6 +207,10 @@ export default function HomePage() {
         </div>
       </div>
     );
+  }
+
+  if (!userProfile) {
+    return <LandingPage onGuestLogin={() => router.push('/onboarding')} />;
   }
 
   return (
