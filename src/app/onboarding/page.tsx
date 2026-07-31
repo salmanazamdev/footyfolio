@@ -215,12 +215,10 @@ export default function OnboardingPage() {
       if (data.report) {
         setAiReport(data.report);
 
-        // Mark onboarding complete in storage & DB
+        // Save report to database if userId exists
         if (userId) {
           await saveScoutingReport(userId, data.report);
           await completeOnboarding(userId);
-        } else {
-          await completeOnboarding('demo_guest_talent');
         }
       } else {
         throw new Error(data.error || 'Failed to generate scouting report');
@@ -228,11 +226,6 @@ export default function OnboardingPage() {
     } catch (err: any) {
       console.error('Error generating AI report during onboarding:', err);
       setErrorMessage('Could not generate AI report. You can proceed to dashboard and generate it anytime.');
-      if (userId) {
-        await completeOnboarding(userId);
-      } else {
-        await completeOnboarding('demo_guest_talent');
-      }
     } finally {
       setGeneratingReport(false);
     }
@@ -245,8 +238,6 @@ export default function OnboardingPage() {
     try {
       if (userId) {
         await completeOnboarding(userId);
-      } else {
-        await completeOnboarding('demo_guest_talent');
       }
       window.location.href = '/';
     } catch (err: any) {

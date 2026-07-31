@@ -116,11 +116,7 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
       localStorage.setItem('footyfolio_user_report_' + userId, guestReport);
     }
 
-    const isGuestOnboarded = guestProfile.onboardingCompleted || 
-      localStorage.getItem('footyfolio_onboarded_demo_guest_talent') === 'true' ||
-      localStorage.getItem('footyfolio_onboarded_demo_guest_scout') === 'true';
-
-    if (isGuestOnboarded) {
+    if (guestProfile.onboardingCompleted) {
       localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
     }
   } catch (e) {
@@ -137,25 +133,20 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
         .eq('id', userId)
         .maybeSingle();
 
-      const newRole = existingProfile?.role || guestProfile.role || 'talent';
+      const newRole = existingProfile?.role || guestProfile.role;
       const newName = (existingProfile?.name && existingProfile.name !== 'User' && existingProfile.name !== 'FootyFolio User') 
         ? existingProfile.name 
         : (guestProfile.name && !guestProfile.name.includes('Guest') ? guestProfile.name : (existingProfile?.name || 'FootyFolio User'));
-      const newAge = existingProfile?.age || guestProfile.age || 19;
-      const newCity = existingProfile?.city || guestProfile.city || 'Karachi';
+      const newAge = existingProfile?.age || guestProfile.age;
+      const newCity = existingProfile?.city || guestProfile.city;
       const newAvatar = existingProfile?.avatar_url || guestProfile.avatarUrl;
-      
-      const guestWasOnboarded = guestProfile.onboardingCompleted || 
-        localStorage.getItem('footyfolio_onboarded_demo_guest_talent') === 'true' ||
-        localStorage.getItem('footyfolio_onboarded_demo_guest_scout') === 'true';
-
-      const newCompleted = Boolean(existingProfile?.onboarding_completed) || guestWasOnboarded;
+      const newCompleted = Boolean(existingProfile?.onboarding_completed) || guestProfile.onboardingCompleted;
 
       await supabase
         .from('profiles')
         .upsert({
           id: userId,
-          role: newRole,
+          role: newRole || undefined,
           name: newName,
           age: newAge,
           city: newCity,
@@ -255,6 +246,12 @@ export async function triggerGoogleAuthSync(preferredRole: 'talent' | 'scout' = 
 
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
+  // Check local demo / guest session FIRST if active
+  const demoSession = getDemoUserSession();
+  if (demoSession) {
+    return demoSession;
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -270,11 +267,7 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
           .eq('id', user.id)
           .maybeSingle();
 
-        const localCompleted = typeof window !== 'undefined' && (
-          localStorage.getItem('footyfolio_onboarded_' + user.id) === 'true' ||
-          localStorage.getItem('footyfolio_onboarded_demo_guest_talent') === 'true' ||
-          localStorage.getItem('footyfolio_onboarded_demo_guest_scout') === 'true'
-        );
+        const localCompleted = typeof window !== 'undefined' && localStorage.getItem('footyfolio_onboarded_' + user.id) === 'true';
 
         if (!profile) {
           return {
@@ -283,7 +276,7 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
               id: user.id,
               email: user.email || '',
               name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-              role: 'talent',
+              role: null,
               onboardingCompleted: localCompleted,
             },
           };
@@ -295,7 +288,7 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
             id: profile.id,
             email: user.email || '',
             name: profile.name || user.user_metadata?.full_name || 'User',
-            role: profile.role || 'talent',
+            role: profile.role || null,
             age: profile.age,
             city: profile.city,
             avatarUrl: profile.avatar_url,
@@ -308,10 +301,10 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
     }
   }
 
-  // Fallback to local demo / guest session if no authenticated Supabase user
-  const demoSession = getDemoUserSession();
-  if (demoSession) {
-    return demoSession;
+  // Fallback to local demo session if Supabase is unconfigured or unavailable
+  const fallbackDemo = getDemoUserSession();
+  if (fallbackDemo) {
+    return fallbackDemo;
   }
 
   return { user: null, profile: null };

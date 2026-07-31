@@ -34,10 +34,19 @@ export async function GET(request: Request) {
         }
       );
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error) {
-        // Direct HTTP redirect to root so client can sync guest session and evaluate route
-        return NextResponse.redirect(`${origin}/`);
+      const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error && data?.user) {
+        // Check if user has completed onboarding
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', data.user.id)
+          .single();
+
+        const target = profile?.onboarding_completed ? '/' : '/onboarding';
+        
+        // Direct HTTP redirect
+        return NextResponse.redirect(`${origin}${target}`);
       }
     }
   }
