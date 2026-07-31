@@ -300,8 +300,8 @@ export async function updateUserProfileAvatar(userId: string, avatarUrl: string)
 }
 
 // 3. Save Talent Onboarding Step 1 (Basics)
-export async function saveTalentBasics(userId: string, data: { name: string; age: number; position: string; city: string }) {
-  if (isSupabaseConfigured()) {
+export async function saveTalentBasics(userId: string, data: { name: string; age: number; position: string; city: string; bio?: string }) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
       await supabase
@@ -319,6 +319,7 @@ export async function saveTalentBasics(userId: string, data: { name: string; age
         .upsert({
           profile_id: userId,
           position: data.position,
+          bio: data.bio || '',
         }, { onConflict: 'profile_id' });
     } catch (e) {
       console.warn('Supabase save talent basics failed, updating local state:', e);
@@ -332,6 +333,8 @@ export async function saveTalentBasics(userId: string, data: { name: string; age
     demo.profile.age = data.age;
     demo.profile.city = data.city;
     demo.profile.role = 'talent';
+    (demo.profile as any).position = data.position;
+    (demo.profile as any).bio = data.bio || '';
     saveDemoUserSession(demo.user, demo.profile);
   }
 }
@@ -345,6 +348,27 @@ export async function saveMatchLog(userId: string, matchData: {
   notes: string;
   matchDate?: string;
 }) {
+  const newMatchItem = {
+    id: 'match-' + Date.now(),
+    profile_id: userId,
+    opponent: matchData.opponent || 'Competitive Match',
+    goals: matchData.goals || 0,
+    assists: matchData.assists || 0,
+    minutes_played: matchData.minutesPlayed || 0,
+    notes: matchData.notes || '',
+    match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      const existingKey = 'footyfolio_user_matches_' + userId;
+      const raw = localStorage.getItem(existingKey);
+      const list = raw ? JSON.parse(raw) : [];
+      list.unshift(newMatchItem);
+      localStorage.setItem(existingKey, JSON.stringify(list));
+    } catch (e) {}
+  }
+
   if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
@@ -368,16 +392,7 @@ export async function saveMatchLog(userId: string, matchData: {
     }
   }
 
-  return {
-    id: 'match-' + Date.now(),
-    profile_id: userId,
-    opponent: matchData.opponent || 'Competitive Match',
-    goals: matchData.goals || 0,
-    assists: matchData.assists || 0,
-    minutes_played: matchData.minutesPlayed || 0,
-    notes: matchData.notes || '',
-    match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
-  };
+  return newMatchItem;
 }
 
 // 5. Save AI Scouting Report
@@ -388,6 +403,23 @@ export async function saveScoutingReport(userId: string, report: {
   verdict: string;
   source?: string;
 }) {
+  const newReportItem = {
+    id: 'report-' + Date.now(),
+    profile_id: userId,
+    summary: report.summary,
+    strengths: report.strengths,
+    areas_to_develop: report.areasToDevelop,
+    verdict: report.verdict,
+    source: report.source || 'gemini-3.6-flash',
+    created_at: new Date().toISOString(),
+  };
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('footyfolio_user_report_' + userId, JSON.stringify(newReportItem));
+    } catch (e) {}
+  }
+
   if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
@@ -410,16 +442,7 @@ export async function saveScoutingReport(userId: string, report: {
     }
   }
 
-  return {
-    id: 'report-' + Date.now(),
-    profile_id: userId,
-    summary: report.summary,
-    strengths: report.strengths,
-    areas_to_develop: report.areasToDevelop,
-    verdict: report.verdict,
-    source: report.source || 'gemini-3.6-flash',
-    created_at: new Date().toISOString(),
-  };
+  return newReportItem;
 }
 
 // 6. Complete Onboarding
@@ -530,37 +553,54 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
     const baseId = demoTalent?.id || userId || 'talent-demo';
     const localShortlistedBy = getLocalShortlistedBy(baseId);
 
+    let localMatches: Match[] = [];
+    let localReport: ScoutingReport | undefined = undefined;
+
+    if (typeof window !== 'undefined') {
+      try {
+        const rawMatches = localStorage.getItem('footyfolio_user_matches_' + baseId);
+        if (rawMatches) {
+          const list = JSON.parse(rawMatches);
+          localMatches = list.map((m: any) => ({
+            id: m.id || m.profile_id + '-' + Date.now(),
+            talentProfileId: baseId,
+            goals: m.goals || 0,
+            assists: m.assists || 0,
+            minutesPlayed: m.minutesPlayed || m.minutes_played || 0,
+            notes: m.notes || '',
+            matchDate: m.matchDate || m.match_date || new Date().toISOString().split('T')[0],
+            opponent: m.opponent || 'Competitive Match',
+          }));
+        }
+
+        const rawReport = localStorage.getItem('footyfolio_user_report_' + baseId);
+        if (rawReport) {
+          const r = JSON.parse(rawReport);
+          localReport = {
+            id: r.id || 'rep-' + Date.now(),
+            talentProfileId: baseId,
+            summary: r.summary || '',
+            strengths: Array.isArray(r.strengths) ? r.strengths : [],
+            areasToDevelop: Array.isArray(r.areasToDevelop) ? r.areasToDevelop : Array.isArray(r.areas_to_develop) ? r.areas_to_develop : [],
+            verdict: r.verdict || '',
+            generatedAt: r.created_at || r.generatedAt || new Date().toISOString(),
+          };
+        }
+      } catch (e) {}
+    }
+
     return {
       id: baseId,
       userId: baseId,
-      name: demoTalent?.name || 'Hamza Khan',
+      name: demoTalent?.name || 'Player',
       age: demoTalent?.age || 19,
-      position: (demoTalent as any)?.position || 'forward',
-      city: demoTalent?.city || 'Lahore',
-      bio: 'Amateur striker playing in the Lahore District League. Quick off the mark, clinical inside the 18-yard box.',
+      position: (demoTalent as any)?.position || 'Forward',
+      city: demoTalent?.city || 'Karachi',
+      bio: (demoTalent as any)?.bio || '',
       avatarUrl: demoTalent?.avatarUrl,
       preferredFoot: 'Right',
-      matches: [
-        {
-          id: 'm-1',
-          talentProfileId: baseId,
-          goals: 2,
-          assists: 1,
-          minutesPlayed: 90,
-          notes: 'Scored two goals on the counter-attack and provided an assist in a 3-1 win against Model Town FC.',
-          matchDate: '2026-07-20',
-          opponent: 'Model Town FC',
-        }
-      ],
-      latestReport: {
-        id: 'rep-1',
-        talentProfileId: baseId,
-        summary: 'Hamza Khan demonstrated exceptional pace and finishing composure against Model Town FC. His movement off the ball consistently created goalscoring opportunities.',
-        strengths: ['Clinical Finishing', 'Explosive Acceleration', 'Off-ball Movement'],
-        areasToDevelop: ['Weak-foot Consistency', 'Aerial Duels'],
-        verdict: 'High-potential forward prospect for regional academy trials.',
-        generatedAt: new Date().toISOString(),
-      },
+      matches: localMatches,
+      latestReport: localReport,
       shortlistedBy: localShortlistedBy,
       createdAt: new Date().toISOString(),
     };

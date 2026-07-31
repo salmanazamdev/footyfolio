@@ -15,9 +15,9 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   onSubmitMatch,
   isGeneratingReport = false
 }) => {
-  const [goals, setGoals] = useState<number>(0);
-  const [assists, setAssists] = useState<number>(0);
-  const [minutesPlayed, setMinutesPlayed] = useState<number>(90);
+  const [goals, setGoals] = useState<string>('0');
+  const [assists, setAssists] = useState<string>('0');
+  const [minutesPlayed, setMinutesPlayed] = useState<string>('90');
   const [opponent, setOpponent] = useState<string>('');
   const [matchDate, setMatchDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
@@ -26,18 +26,22 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const gVal = goals === '' ? 0 : Math.max(0, parseInt(goals, 10) || 0);
+    const aVal = assists === '' ? 0 : Math.max(0, parseInt(assists, 10) || 0);
+    const mVal = minutesPlayed === '' ? 90 : Math.max(1, parseInt(minutesPlayed, 10) || 90);
+
     onSubmitMatch({
-      goals: Number(goals),
-      assists: Number(assists),
-      minutesPlayed: Number(minutesPlayed),
+      goals: gVal,
+      assists: aVal,
+      minutesPlayed: mVal,
       opponent: opponent || 'Opponent FC',
       matchDate,
       notes: notes || 'Match performance logged.'
     });
     // Reset form
-    setGoals(0);
-    setAssists(0);
-    setMinutesPlayed(90);
+    setGoals('0');
+    setAssists('0');
+    setMinutesPlayed('90');
     setOpponent('');
     setNotes('');
   };
@@ -99,41 +103,100 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
           <div className="grid grid-cols-3 gap-3 p-4 bg-[#F8FAFC] rounded-xl border border-[#E5E7EB]">
             <div>
               <label className="block text-xs font-semibold text-[#111827] mb-1">Goals</label>
-              <input
-                type="number"
-                min="0"
-                max="20"
-                value={goals}
-                onChange={(e) => setGoals(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full px-3 h-10 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-sm text-[#16A34A] focus:outline-none focus:border-[#16A34A]"
-                required
-              />
+              <div className="space-y-1.5">
+                <select
+                  value={['0','1','2','3','4','5'].includes(goals) ? goals : 'custom'}
+                  onChange={(e) => {
+                    if (e.target.value !== 'custom') setGoals(e.target.value);
+                  }}
+                  className="w-full px-2 h-8 rounded-lg border border-[#E5E7EB] bg-white text-xs font-semibold text-[#16A34A] focus:outline-none"
+                >
+                  <option value="0">0 Goals</option>
+                  <option value="1">1 Goal</option>
+                  <option value="2">2 Goals</option>
+                  <option value="3">3 Goals (Hat-trick)</option>
+                  <option value="4">4 Goals</option>
+                  <option value="5">5+ Goals</option>
+                  <option value="custom">Custom value...</option>
+                </select>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="0"
+                  value={goals}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setGoals(val);
+                  }}
+                  className="w-full px-3 h-9 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-sm text-[#16A34A] focus:outline-none focus:border-[#16A34A]"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#111827] mb-1">Assists</label>
-              <input
-                type="number"
-                min="0"
-                max="20"
-                value={assists}
-                onChange={(e) => setAssists(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full px-3 h-10 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-sm text-[#D97706] focus:outline-none focus:border-[#16A34A]"
-                required
-              />
+              <div className="space-y-1.5">
+                <select
+                  value={['0','1','2','3','4','5'].includes(assists) ? assists : 'custom'}
+                  onChange={(e) => {
+                    if (e.target.value !== 'custom') setAssists(e.target.value);
+                  }}
+                  className="w-full px-2 h-8 rounded-lg border border-[#E5E7EB] bg-white text-xs font-semibold text-[#D97706] focus:outline-none"
+                >
+                  <option value="0">0 Assists</option>
+                  <option value="1">1 Assist</option>
+                  <option value="2">2 Assists</option>
+                  <option value="3">3 Assists</option>
+                  <option value="4">4 Assists</option>
+                  <option value="5">5+ Assists</option>
+                  <option value="custom">Custom value...</option>
+                </select>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="0"
+                  value={assists}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setAssists(val);
+                  }}
+                  className="w-full px-3 h-9 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-sm text-[#D97706] focus:outline-none focus:border-[#16A34A]"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#111827] mb-1">Minutes</label>
-              <input
-                type="number"
-                min="1"
-                max="120"
-                value={minutesPlayed}
-                onChange={(e) => setMinutesPlayed(Math.max(1, parseInt(e.target.value) || 0))}
-                className="w-full px-3 h-10 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-sm text-[#111827] focus:outline-none focus:border-[#16A34A]"
-                required
-              />
+              <div className="space-y-1.5">
+                <select
+                  value={['90','60','45','30','15'].includes(minutesPlayed) ? minutesPlayed : 'custom'}
+                  onChange={(e) => {
+                    if (e.target.value !== 'custom') setMinutesPlayed(e.target.value);
+                  }}
+                  className="w-full px-2 h-8 rounded-lg border border-[#E5E7EB] bg-white text-xs font-semibold text-[#111827] focus:outline-none"
+                >
+                  <option value="90">90 mins (Full)</option>
+                  <option value="60">60 mins</option>
+                  <option value="45">45 mins (Half)</option>
+                  <option value="30">30 mins (Sub)</option>
+                  <option value="15">15 mins</option>
+                  <option value="custom">Custom value...</option>
+                </select>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="90"
+                  value={minutesPlayed}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setMinutesPlayed(val);
+                  }}
+                  className="w-full px-3 h-9 rounded-xl border border-[#E5E7EB] bg-white text-center font-bold text-sm text-[#111827] focus:outline-none focus:border-[#16A34A]"
+                />
+              </div>
             </div>
           </div>
 

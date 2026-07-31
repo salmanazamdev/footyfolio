@@ -359,26 +359,23 @@ export default function LoginPage() {
             )}
           </button>
 
-          {/* Single Action Guest Mode Option Below Google Sign In */}
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={() => handleGuestLogin('talent')}
-              className="w-full py-3 px-4 rounded-xl bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#CBD5E1] text-[#111827] text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-2xs cursor-pointer"
-            >
-              <Zap className="w-4 h-4 text-[#16A34A] fill-[#16A34A]" />
-              <span>Continue as Guest (Instant Access)</span>
-            </button>
-          </div>
-
           {/* Switch to Signup */}
-          <div className="mt-6 pt-6 border-t border-[#E5E7EB] text-center">
+          <div className="mt-6 pt-6 border-t border-[#E5E7EB] text-center space-y-3">
             <p className="text-sm text-[#6B7280]">
               Don't have an account yet?{' '}
               <Link href="/signup" className="font-semibold text-[#16A34A] hover:text-[#15803D]">
                 Create a new account
               </Link>
             </p>
+            <div>
+              <button
+                type="button"
+                onClick={() => handleGuestLogin('talent')}
+                className="text-xs text-[#6B7280] hover:text-[#111827] underline underline-offset-2 transition-colors cursor-pointer"
+              >
+                Or explore preview mode as guest
+              </button>
+            </div>
           </div>
 
         </div>

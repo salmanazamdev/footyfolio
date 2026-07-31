@@ -22,16 +22,17 @@ export default function OnboardingPage() {
 
   // Talent Step 1 State
   const [fullName, setFullName] = useState('');
-  const [age, setAge] = useState<number>(19);
+  const [age, setAge] = useState<string>('19');
   const [position, setPosition] = useState<string>('Forward');
-  const [city, setCity] = useState('Karachi');
+  const [city, setCity] = useState('');
+  const [bio, setBio] = useState('');
 
   // Talent Step 2 State
-  const [opponent, setOpponent] = useState('Korangi FC');
-  const [goals, setGoals] = useState<number>(1);
-  const [assists, setAssists] = useState<number>(1);
-  const [minutesPlayed, setMinutesPlayed] = useState<number>(85);
-  const [tacticalNotes, setTacticalNotes] = useState('Drove into final third repeatedly, cut inside from the left flank and scored winning header.');
+  const [opponent, setOpponent] = useState('');
+  const [goals, setGoals] = useState<string>('0');
+  const [assists, setAssists] = useState<string>('0');
+  const [minutesPlayed, setMinutesPlayed] = useState<string>('90');
+  const [tacticalNotes, setTacticalNotes] = useState('');
 
   // Talent Step 3 State (AI Report)
   const [generatingReport, setGeneratingReport] = useState(false);
@@ -51,7 +52,7 @@ export default function OnboardingPage() {
           if (profile) {
             if (profile.name) setFullName(profile.name);
             if (profile.role) setRole(profile.role);
-            if (profile.age) setAge(profile.age);
+            if (profile.age) setAge(String(profile.age));
             if (profile.city) {
               setCity(profile.city);
               setScoutCity(profile.city);
@@ -98,9 +99,11 @@ export default function OnboardingPage() {
     setErrorMessage(null);
     setSavingStep(true);
 
+    const numAge = age === '' ? 19 : Math.max(12, Math.min(45, parseInt(age, 10) || 19));
+
     try {
       if (userId) {
-        await saveTalentBasics(userId, { name: fullName, age, position, city });
+        await saveTalentBasics(userId, { name: fullName, age: numAge, position, city: city || 'Karachi', bio });
       }
       setCurrentStep(2);
     } catch (err: any) {
@@ -117,13 +120,17 @@ export default function OnboardingPage() {
     setErrorMessage(null);
     setSavingStep(true);
 
+    const gVal = goals === '' ? 0 : Math.max(0, parseInt(goals, 10) || 0);
+    const aVal = assists === '' ? 0 : Math.max(0, parseInt(assists, 10) || 0);
+    const mVal = minutesPlayed === '' ? 90 : Math.max(1, parseInt(minutesPlayed, 10) || 90);
+
     try {
       if (userId) {
         await saveMatchLog(userId, {
-          opponent,
-          goals,
-          assists,
-          minutesPlayed,
+          opponent: opponent || 'Competitive Match',
+          goals: gVal,
+          assists: aVal,
+          minutesPlayed: mVal,
           notes: tacticalNotes,
         });
       }
@@ -143,21 +150,26 @@ export default function OnboardingPage() {
     setGeneratingReport(true);
     setErrorMessage(null);
 
+    const numAge = age === '' ? 19 : Math.max(12, Math.min(45, parseInt(age, 10) || 19));
+    const gVal = goals === '' ? 0 : Math.max(0, parseInt(goals, 10) || 0);
+    const aVal = assists === '' ? 0 : Math.max(0, parseInt(assists, 10) || 0);
+    const mVal = minutesPlayed === '' ? 90 : Math.max(1, parseInt(minutesPlayed, 10) || 90);
+
     try {
       const response = await fetch('/api/generate-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: fullName || 'Talent Player',
-          age,
+          age: numAge,
           position,
-          city,
+          city: city || 'Karachi',
           matches: [
             {
-              opponent,
-              goals,
-              assists,
-              minutesPlayed,
+              opponent: opponent || 'Competitive Match',
+              goals: gVal,
+              assists: aVal,
+              minutesPlayed: mVal,
               notes: tacticalNotes,
               matchDate: new Date().toISOString().split('T')[0],
             },
@@ -194,10 +206,10 @@ export default function OnboardingPage() {
       if (userId) {
         await completeOnboarding(userId);
       }
-      router.push('/');
+      window.location.href = '/';
     } catch (err: any) {
       console.error('Error marking onboarding complete:', err);
-      router.push('/');
+      window.location.href = '/';
     }
   };
 
@@ -249,10 +261,10 @@ export default function OnboardingPage() {
       } else {
         await completeOnboarding('scout-demo');
       }
-      router.push('/');
+      window.location.href = '/';
     } catch (err: any) {
       console.error('Error completing scout onboarding:', err);
-      router.push('/');
+      window.location.href = '/';
     }
   };
 
@@ -449,12 +461,13 @@ export default function OnboardingPage() {
                       Age
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       required
-                      min={12}
-                      max={45}
+                      placeholder="19"
                       value={age}
-                      onChange={(e) => setAge(Number(e.target.value))}
+                      onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, ''))}
                       className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
                     />
                   </div>
@@ -486,6 +499,19 @@ export default function OnboardingPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g. Karachi, Lahore, Islamabad"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
+                    Player Bio / Pitch Summary
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="e.g. Explosive left winger with strong dribbling, high work rate, and district league experience."
                     className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
                   />
                 </div>
@@ -529,40 +555,95 @@ export default function OnboardingPage() {
                     <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
                       Goals
                     </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={goals}
-                      onChange={(e) => setGoals(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
-                    />
+                    <div className="space-y-1">
+                      <select
+                        value={['0','1','2','3','4','5'].includes(goals) ? goals : 'custom'}
+                        onChange={(e) => {
+                          if (e.target.value !== 'custom') setGoals(e.target.value);
+                        }}
+                        className="w-full px-2 h-7 rounded-lg border border-[#E5E7EB] bg-white text-xs font-semibold text-[#16A34A] focus:outline-none"
+                      >
+                        <option value="0">0 Goals</option>
+                        <option value="1">1 Goal</option>
+                        <option value="2">2 Goals</option>
+                        <option value="3">3 Goals (Hat-trick)</option>
+                        <option value="4">4 Goals</option>
+                        <option value="5">5+ Goals</option>
+                        <option value="custom">Custom value...</option>
+                      </select>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="0"
+                        value={goals}
+                        onChange={(e) => setGoals(e.target.value.replace(/[^0-9]/g, ''))}
+                        className="w-full px-3 py-1.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827] text-center font-bold"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
                       Assists
                     </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={assists}
-                      onChange={(e) => setAssists(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
-                    />
+                    <div className="space-y-1">
+                      <select
+                        value={['0','1','2','3','4','5'].includes(assists) ? assists : 'custom'}
+                        onChange={(e) => {
+                          if (e.target.value !== 'custom') setAssists(e.target.value);
+                        }}
+                        className="w-full px-2 h-7 rounded-lg border border-[#E5E7EB] bg-white text-xs font-semibold text-[#D97706] focus:outline-none"
+                      >
+                        <option value="0">0 Assists</option>
+                        <option value="1">1 Assist</option>
+                        <option value="2">2 Assists</option>
+                        <option value="3">3 Assists</option>
+                        <option value="4">4 Assists</option>
+                        <option value="5">5+ Assists</option>
+                        <option value="custom">Custom value...</option>
+                      </select>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="0"
+                        value={assists}
+                        onChange={(e) => setAssists(e.target.value.replace(/[^0-9]/g, ''))}
+                        className="w-full px-3 py-1.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827] text-center font-bold"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
                       Minutes
                     </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={120}
-                      value={minutesPlayed}
-                      onChange={(e) => setMinutesPlayed(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
-                    />
+                    <div className="space-y-1">
+                      <select
+                        value={['90','60','45','30','15'].includes(minutesPlayed) ? minutesPlayed : 'custom'}
+                        onChange={(e) => {
+                          if (e.target.value !== 'custom') setMinutesPlayed(e.target.value);
+                        }}
+                        className="w-full px-2 h-7 rounded-lg border border-[#E5E7EB] bg-white text-xs font-semibold text-[#111827] focus:outline-none"
+                      >
+                        <option value="90">90 mins (Full)</option>
+                        <option value="60">60 mins</option>
+                        <option value="45">45 mins (Half)</option>
+                        <option value="30">30 mins (Sub)</option>
+                        <option value="15">15 mins</option>
+                        <option value="custom">Custom value...</option>
+                      </select>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="90"
+                        value={minutesPlayed}
+                        onChange={(e) => setMinutesPlayed(e.target.value.replace(/[^0-9]/g, ''))}
+                        className="w-full px-3 py-1.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827] text-center font-bold"
+                      />
+                    </div>
                   </div>
                 </div>
 
