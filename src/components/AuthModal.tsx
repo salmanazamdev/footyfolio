@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase/client';
-import { isSupabaseConfigured, selectUserRole, startGuestSession, syncGuestDataToSupabaseUser } from '../lib/supabase/helpers';
+import { isSupabaseConfigured, selectUserRole, startGuestSession, syncGuestDataToSupabaseUser, saveDemoUserSession } from '../lib/supabase/helpers';
 import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X, Zap } from 'lucide-react';
 
 interface AuthModalProps {
@@ -53,32 +53,60 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
-    if (!supabaseConfigured) {
-      setErrorMessage('Supabase is not configured yet. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.');
-      return;
-    }
-
     setLoading(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
 
-      if (error) {
-        setErrorMessage(error.message);
-        setLoading(false);
+    try {
+      if (supabaseConfigured) {
+        const supabase = createClient();
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+        const redirectUrl = `${siteUrl.replace(/\/$/, '')}/auth/callback`;
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+          },
+        });
+
+        if (error) {
+          setErrorMessage(error.message);
+          setLoading(false);
+          return;
+        }
+
+        if (data?.url) {
+          window.location.href = data.url;
+        }
+      } else {
+        // Sync guest session data to demo Google user
+        const demoId = 'google-user-' + Date.now();
+        await syncGuestDataToSupabaseUser(demoId);
+
+        const demoUser = {
+          id: demoId,
+          email: 'google.player@gmail.com',
+          user_metadata: { full_name: fullName.trim() || 'Google Player' },
+        };
+        const demoProfile = {
+          id: demoId,
+          email: 'google.player@gmail.com',
+          name: fullName.trim() || 'Google Player',
+          role: role || 'talent',
+          onboardingCompleted: true,
+        };
+        saveDemoUserSession(demoUser, demoProfile);
+        onSuccess(demoUser, demoProfile.role as 'talent' | 'scout');
+        onClose();
+        window.location.reload();
       }
     } catch (err: any) {
       console.error('Google Auth Error:', err);
       setErrorMessage(err.message || 'An error occurred during Google Sign-In.');
+    } finally {
       setLoading(false);
     }
   };

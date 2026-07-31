@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserRole } from '../types';
 import { Logo } from './Logo';
 import { AvatarDisplay } from './AvatarDisplay';
@@ -37,6 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuth,
   onLogout,
 }) => {
+  const router = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -199,7 +201,11 @@ export const Header: React.FC<HeaderProps> = ({
                             type="button"
                             onClick={() => {
                               setIsProfileMenuOpen(false);
-                              window.location.href = '/signup';
+                              if (onOpenAuth) {
+                                onOpenAuth('signup');
+                              } else {
+                                router.push('/signup');
+                              }
                             }}
                             className="w-full py-1.5 px-3 rounded-lg bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
                           >

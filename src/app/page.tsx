@@ -9,6 +9,7 @@ import { TalentDashboard } from '../components/TalentDashboard';
 import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
 import { AvatarSelectorModal } from '../components/AvatarSelectorModal';
+import { AuthModal } from '../components/AuthModal';
 import { createClient } from '../lib/supabase/client';
 import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, clearDemoUserSession, startGuestSession } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
@@ -31,6 +32,7 @@ export default function HomePage() {
   // Modals
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup' | null>(null);
 
   const supabaseConfigured = isSupabaseConfigured();
 
@@ -239,7 +241,7 @@ export default function HomePage() {
         shortlistCount={shortlists.length}
         onViewShortlist={() => setScoutTab('shortlist')}
         activeTab={scoutTab}
-        onOpenAuth={(mode) => router.push(mode === 'signup' ? '/signup' : '/login')}
+        onOpenAuth={(mode) => setAuthModalMode(mode)}
         onLogout={handleLogout}
       />
 
@@ -285,6 +287,18 @@ export default function HomePage() {
         onClose={() => setIsAvatarModalOpen(false)}
         currentAvatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl}
         onSelectAvatar={handleUpdateAvatar}
+      />
+
+      {/* Cloud Account Sync / Auth Modal */}
+      <AuthModal
+        isOpen={!!authModalMode}
+        initialMode={authModalMode || 'signup'}
+        initialRole={currentRole || 'talent'}
+        onClose={() => setAuthModalMode(null)}
+        onSuccess={() => {
+          setAuthModalMode(null);
+          window.location.reload();
+        }}
       />
 
     </div>

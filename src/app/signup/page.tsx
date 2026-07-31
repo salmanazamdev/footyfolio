@@ -96,21 +96,33 @@ export default function SignupPage() {
           window.location.href = data.url;
         }
       } else {
+        const existingDemo = getDemoUserSession();
         const demoId = 'google-user-' + Date.now();
+        await syncGuestDataToSupabaseUser(demoId);
+
+        const guestProfile = existingDemo?.profile;
         const demoUser = {
           id: demoId,
-          email: 'google.player@example.com',
-          user_metadata: { full_name: 'Google Player' },
+          email: 'google.player@gmail.com',
+          user_metadata: { full_name: guestProfile?.name || 'Google Player' },
         };
         const demoProfile = {
           id: demoId,
-          email: 'google.player@example.com',
-          name: 'Google Player',
-          role: null,
-          onboardingCompleted: false,
+          email: 'google.player@gmail.com',
+          name: guestProfile?.name && !guestProfile.name.startsWith('Guest') ? guestProfile.name : 'Google Player',
+          role: guestProfile?.role || 'talent',
+          age: guestProfile?.age || 19,
+          city: guestProfile?.city || 'Karachi',
+          avatarUrl: guestProfile?.avatarUrl,
+          onboardingCompleted: guestProfile?.onboardingCompleted ?? true,
         };
         saveDemoUserSession(demoUser, demoProfile);
-        router.push('/onboarding');
+
+        if (demoProfile.onboardingCompleted) {
+          router.push('/');
+        } else {
+          router.push('/onboarding');
+        }
       }
     } catch (err: any) {
       console.error('Unexpected Google Sign-In error:', err);

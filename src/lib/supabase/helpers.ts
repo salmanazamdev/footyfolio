@@ -102,6 +102,27 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
   if (!demo || !demo.profile) return;
 
   const guestProfile = demo.profile;
+  const baseGuestId = demo.user?.id || 'demo_guest_talent';
+
+  // Migrate local storage matches & reports from guest ID to the target userId
+  try {
+    const guestMatches = localStorage.getItem('footyfolio_user_matches_' + baseGuestId) || localStorage.getItem('footyfolio_user_matches_demo_guest_talent');
+    if (guestMatches && !localStorage.getItem('footyfolio_user_matches_' + userId)) {
+      localStorage.setItem('footyfolio_user_matches_' + userId, guestMatches);
+    }
+
+    const guestReport = localStorage.getItem('footyfolio_user_report_' + baseGuestId) || localStorage.getItem('footyfolio_user_report_demo_guest_talent');
+    if (guestReport && !localStorage.getItem('footyfolio_user_report_' + userId)) {
+      localStorage.setItem('footyfolio_user_report_' + userId, guestReport);
+    }
+
+    if (guestProfile.onboardingCompleted) {
+      localStorage.setItem('footyfolio_onboarded_' + userId, 'true');
+    }
+  } catch (e) {
+    console.warn('Error migrating local storage guest records:', e);
+  }
+
   if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
