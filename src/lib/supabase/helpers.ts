@@ -181,10 +181,24 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
 
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
+  // Check local demo / guest session FIRST if active
+  const demoSession = getDemoUserSession();
+  if (demoSession) {
+    return demoSession;
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      // Safety timeout to prevent infinite hanging if Supabase auth request stalls
+      const getUserPromise = supabase.auth.getUser();
+      const timeoutPromise = new Promise<{ data: { user: null }; error: any }>((resolve) =>
+        setTimeout(() => resolve({ data: { user: null }, error: new Error('Auth check timeout') }), 2500)
+      );
+
+      const { data, error: userError } = await Promise.race([getUserPromise, timeoutPromise]);
+      const user = data?.user;
 
       if (!userError && user) {
         // Sync local guest onboarding session to Supabase account if guest data exists
@@ -228,12 +242,6 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
     } catch (err) {
       console.error('Failed to get Supabase user profile:', err);
     }
-  }
-
-  // Fallback to local demo / guest session if active
-  const demoSession = getDemoUserSession();
-  if (demoSession) {
-    return demoSession;
   }
 
   return { user: null, profile: null };

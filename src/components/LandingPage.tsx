@@ -20,9 +20,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGuestLogin }) => {
     }
   };
 
-  const handleOpenAuth = (mode: 'signin' | 'signup') => {
+  const handleOpenAuth = (mode: 'signin' | 'signup', role?: 'talent' | 'scout') => {
     if (mode === 'signup') {
-      router.push('/signup');
+      router.push(role ? `/signup?role=${role}` : '/signup');
     } else {
       router.push('/login');
     }
@@ -38,7 +38,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGuestLogin }) => {
       <main className="flex-1">
         <LandingHero
           onSelectRole={(role) => router.push(`/signup?role=${role}`)}
-          onOpenAuth={(mode) => handleOpenAuth(mode)}
+          onOpenAuth={(mode, role) => handleOpenAuth(mode, role)}
           onGuestAccess={(role) => handleGuest(role)}
         />
       </main>

@@ -182,31 +182,40 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAu
 
       {/* Feature Highlights */}
       <div className="mt-12 pt-8 border-t border-[#E5E7EB] grid md:grid-cols-3 gap-6 text-[#111827]">
-        <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <div className="w-10 h-10 rounded-xl bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center mb-3">
+        <div 
+          onClick={() => onOpenAuth ? onOpenAuth('signup', 'talent') : onSelectRole('talent')}
+          className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs hover:border-[#16A34A] hover:shadow-md transition-all cursor-pointer group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center mb-3 group-hover:bg-[#16A34A] group-hover:text-white transition-colors">
             <Activity className="w-5 h-5" />
           </div>
-          <h3 className="font-sans font-bold text-lg mb-1">Match Statistics Logging</h3>
+          <h3 className="font-sans font-bold text-lg mb-1 group-hover:text-[#16A34A] transition-colors">Match Statistics Logging</h3>
           <p className="text-xs text-[#6B7280] leading-relaxed">
             Record goals, assists, minutes, and match notes after every game in under 30 seconds.
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <div className="w-10 h-10 rounded-xl bg-[#D97706]/10 text-[#D97706] flex items-center justify-center mb-3">
+        <div 
+          onClick={() => onOpenAuth ? onOpenAuth('signup', 'talent') : onSelectRole('talent')}
+          className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs hover:border-[#16A34A] hover:shadow-md transition-all cursor-pointer group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-[#D97706]/10 text-[#D97706] flex items-center justify-center mb-3 group-hover:bg-[#D97706] group-hover:text-white transition-colors">
             <Award className="w-5 h-5" />
           </div>
-          <h3 className="font-sans font-bold text-lg mb-1">AI Scout Dossiers</h3>
+          <h3 className="font-sans font-bold text-lg mb-1 group-hover:text-[#D97706] transition-colors">AI Scout Dossiers</h3>
           <p className="text-xs text-[#6B7280] leading-relaxed">
             Gemini synthesizes match data into professional reports: summary, strengths, areas to develop, and verdict.
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs">
-          <div className="w-10 h-10 rounded-xl bg-[#111827]/10 text-[#111827] flex items-center justify-center mb-3">
+        <div 
+          onClick={() => onOpenAuth ? onOpenAuth('signup', 'scout') : onSelectRole('scout')}
+          className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs hover:border-[#D97706] hover:shadow-md transition-all cursor-pointer group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-[#111827]/10 text-[#111827] flex items-center justify-center mb-3 group-hover:bg-[#111827] group-hover:text-white transition-colors">
             <Search className="w-5 h-5" />
           </div>
-          <h3 className="font-sans font-bold text-lg mb-1">Direct Scout Discovery</h3>
+          <h3 className="font-sans font-bold text-lg mb-1 group-hover:text-[#D97706] transition-colors">Direct Scout Discovery</h3>
           <p className="text-xs text-[#6B7280] leading-relaxed">
             Coaches search by position and city (Lahore, Karachi, Islamabad) to bookmark top talent for trials.
           </p>

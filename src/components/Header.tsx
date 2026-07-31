@@ -61,7 +61,12 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Brand Logo & Wordmark */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <div 
+          onClick={() => router.push('/')} 
+          className="flex items-center gap-2.5 sm:gap-3 shrink-0 cursor-pointer"
+          role="button"
+          tabIndex={0}
+        >
           <div className="group">
             <Logo size="md" />
           </div>
