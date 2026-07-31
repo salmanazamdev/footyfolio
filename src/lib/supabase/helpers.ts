@@ -37,6 +37,12 @@ export function saveDemoUserSession(user: any, profile: UserProfileData): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify({ user, profile }));
+    const cookiePayload = encodeURIComponent(JSON.stringify({
+      id: user.id,
+      onboardingCompleted: !!profile.onboardingCompleted,
+      role: profile.role || null
+    }));
+    document.cookie = `footyfolio_guest=${cookiePayload}; path=/; max-age=2592000; SameSite=Lax`;
   } catch (e) {
     console.error('Failed to save demo session to localStorage:', e);
   }
@@ -46,6 +52,7 @@ export function clearDemoUserSession(): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem(DEMO_SESSION_KEY);
+    document.cookie = 'footyfolio_guest=; path=/; max-age=0; SameSite=Lax';
   } catch (e) {}
 }
 
@@ -81,7 +88,7 @@ export function startGuestSession(role?: 'talent' | 'scout', forceNew: boolean =
     age: selectedRole === 'talent' ? 19 : undefined,
     city: 'Karachi',
     avatarUrl: selectedRole === 'talent' ? 'mascot:mascot-lion' : selectedRole === 'scout' ? 'mascot:mascot-eagle' : undefined,
-    onboardingCompleted: true,
+    onboardingCompleted: false,
   };
 
   saveDemoUserSession(guestUser, guestProfile);

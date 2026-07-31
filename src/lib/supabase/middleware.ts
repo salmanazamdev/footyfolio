@@ -48,8 +48,22 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Not logged in
-  if (!user) {
+  // Check for active guest session cookie
+  const guestCookie = request.cookies.get('footyfolio_guest')?.value;
+  let guestData: { id?: string; onboardingCompleted?: boolean; role?: string } | null = null;
+  if (guestCookie) {
+    try {
+      guestData = JSON.parse(decodeURIComponent(guestCookie));
+    } catch (e) {
+      guestData = { id: 'guest-user', onboardingCompleted: true };
+    }
+  }
+
+  const isGuestLoggedIn = !!(guestData && guestData.id);
+  const isAuthenticated = !!user || isGuestLoggedIn;
+
+  // Not logged in (neither Supabase user nor guest session)
+  if (!isAuthenticated) {
     if (!isAuthRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
@@ -58,20 +72,25 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // User is logged in -> check profile onboarding status
+  // User or Guest is logged in -> check onboarding completion status
   let onboardingCompleted = false;
-  try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed, role')
-      .eq('id', user.id)
-      .single();
 
-    if (profile) {
-      onboardingCompleted = !!profile.onboarding_completed;
+  if (user) {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed, role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile) {
+        onboardingCompleted = !!profile.onboarding_completed;
+      }
+    } catch (err) {
+      console.error('Middleware profile check error:', err);
     }
-  } catch (err) {
-    console.error('Middleware profile check error:', err);
+  } else if (isGuestLoggedIn) {
+    onboardingCompleted = !!guestData?.onboardingCompleted;
   }
 
   if (isAuthRoute) {

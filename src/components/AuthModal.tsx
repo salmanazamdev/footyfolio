@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase/client';
-import { isSupabaseConfigured, selectUserRole, startGuestSession } from '../lib/supabase/helpers';
+import { isSupabaseConfigured, selectUserRole, startGuestSession, syncGuestDataToSupabaseUser } from '../lib/supabase/helpers';
 import { Mail, Lock, User, AlertCircle, AlertTriangle, ArrowRight, Shield, UserCheck, X, Zap } from 'lucide-react';
 
 interface AuthModalProps {
@@ -133,6 +133,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }
 
         if (data.user) {
+          await syncGuestDataToSupabaseUser(data.user.id);
           // Store profile role & metadata
           await selectUserRole(data.user.id, role);
           onSuccess(data.user, role);
@@ -152,6 +153,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }
 
         if (data.user) {
+          await syncGuestDataToSupabaseUser(data.user.id);
           const userRole = data.user.user_metadata?.role || role;
           onSuccess(data.user, userRole as 'talent' | 'scout');
           onClose();
