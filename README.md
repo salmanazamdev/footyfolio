@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="docs/screenshots/scout-discovery.png" alt="" width="0" height="0" style="display:none">
-
 # 🏟️ FootyFolio
 
 ### *The digital scouting dossier for grassroots football.*
@@ -9,6 +7,7 @@
 **Turn a match performance into a professional scouting report, in one tap.**
 
 [![Live App](https://img.shields.io/badge/🚀_LIVE_APP-footyfolio.vercel.app-16A34A?style=for-the-badge)](https://footyfolio.vercel.app)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Gemini](https://img.shields.io/badge/AI-Gemini_3.6_Flash-4285F4?style=flat-square&logo=googlegemini&logoColor=white)](https://ai.google.dev)
@@ -37,6 +36,14 @@
 
 ---
 
+## 🧭 Who It's For
+
+**Players** — amateur and grassroots footballers who play regularly (local leagues, street tournaments, five-a-side, college teams) but have no formal way to prove their performance to anyone outside the pitch.
+
+**Scouts & coaches** — academy scouts, local club coaches, and anyone trying to find talent outside the small pool of players who happen to already be visible. Instead of relying on word-of-mouth, they get a searchable, filterable feed of real, self-reported performance data.
+
+---
+
 ## ✨ What It Does
 
 | | |
@@ -47,6 +54,7 @@
 | 🔍 **Scout discovery feed** | Browse and filter local talent by position, city, and age |
 | ⭐ **Shortlisting** | Scouts build and revisit a personal shortlist of prospects worth following up on |
 | 🔐 **Real authentication** | Supabase email/password + Google OAuth — persistent sessions, not a demo toggle |
+| 👤 **Guest mode** | Try the full flow with zero signup — data saves locally and syncs to a real account whenever you're ready |
 | 📱 **Mobile-first** | Built for the phone-first way players and scouts actually use it on the ground |
 
 ---
@@ -209,6 +217,25 @@ Full migration script at [`schema.sql`](./schema.sql).
 | `shortlists` | Saved prospects per scout |
 
 Row Level Security is enforced on every table — players can only write their own data, scouts can browse talent but only manage their own shortlist.
+
+---
+
+## 🗺️ Roadmap
+
+Ideas on the table for future work — not built yet, and open to contributors:
+
+- Real-time messaging between scouts and players
+- Video highlight clips / media uploads
+- Coach or team endorsements
+- Public, shareable player profile links (no login required to view)
+- Email/push notifications
+- Smarter scout-side talent recommendations beyond position/city filters
+
+---
+
+## 🤝 Contributing
+
+FootyFolio is open source and open to contributors — bug fixes, design polish, or picking something off the roadmap above. See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get started.
 
 ---
 
