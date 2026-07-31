@@ -190,7 +190,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
 
                       {/* Guest Local Storage & Sync Notice */}
-                      {isGuest && onOpenAuth && (
+                      {isGuest && (
                         <div className="mt-3 p-3 rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] text-xs space-y-2">
                           <p className="text-[11px] text-[#475569]">
                             🔒 Operating in <strong>Guest Mode</strong>. All matches & edits are stored in your local browser.
@@ -199,7 +199,7 @@ export const Header: React.FC<HeaderProps> = ({
                             type="button"
                             onClick={() => {
                               setIsProfileMenuOpen(false);
-                              onOpenAuth('signup');
+                              window.location.href = '/signup';
                             }}
                             className="w-full py-1.5 px-3 rounded-lg bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
                           >
@@ -250,17 +250,6 @@ export const Header: React.FC<HeaderProps> = ({
                           <span>View Shortlisted Players ({shortlistCount})</span>
                         </button>
                       )}
-
-                      <button
-                        onClick={() => {
-                          setIsProfileMenuOpen(false);
-                          onOpenSchemaModal();
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-[#F8FAFC] text-[#374151] hover:text-[#111827] transition-colors cursor-pointer"
-                      >
-                        <Database className="w-4 h-4 text-[#6B7280]" />
-                        <span>Database Schema & Setup</span>
-                      </button>
                     </div>
 
                     {/* Logout Footer Section */}

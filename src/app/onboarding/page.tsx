@@ -9,6 +9,33 @@ import { UserCheck, Shield, ArrowRight, CheckCircle2, AlertCircle, PlusCircle, S
 import Link from 'next/link';
 import { Logo } from '../../components/Logo';
 
+const PAKISTAN_CITIES = [
+  'Karachi',
+  'Lahore',
+  'Islamabad',
+  'Rawalpindi',
+  'Peshawar',
+  'Quetta',
+  'Faisalabad',
+  'Multan',
+  'Sialkot',
+  'Gujranwala',
+  'Hyderabad',
+  'Sukkur',
+  'Bahawalpur',
+  'Sargodha',
+  'Abbottabad',
+  'Mardan',
+  'Larkana',
+  'Sheikhupura',
+  'Gujrat',
+  'Sahiwal',
+  'Mirpur (AJK)',
+  'Gilgit',
+  'Skardu',
+  'Other',
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
 
@@ -24,7 +51,8 @@ export default function OnboardingPage() {
   const [fullName, setFullName] = useState('');
   const [age, setAge] = useState<string>('19');
   const [position, setPosition] = useState<string>('Forward');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState('Karachi');
+  const [isCustomCity, setIsCustomCity] = useState(false);
   const [bio, setBio] = useState('');
 
   // Talent Step 2 State
@@ -42,6 +70,7 @@ export default function OnboardingPage() {
   // Scout Step State
   const [selectedPositions, setSelectedPositions] = useState<string[]>(['Forward', 'Midfielder']);
   const [scoutCity, setScoutCity] = useState('Karachi');
+  const [isCustomScoutCity, setIsCustomScoutCity] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -50,7 +79,11 @@ export default function OnboardingPage() {
         if (user) {
           setUserId(user.id);
           if (profile) {
-            if (profile.name) setFullName(profile.name);
+            if (profile.name && !profile.name.startsWith('Guest')) {
+              setFullName(profile.name);
+            } else {
+              setFullName('');
+            }
             if (profile.role) setRole(profile.role);
             if (profile.age) setAge(String(profile.age));
             if (profile.city) {
@@ -298,11 +331,6 @@ export default function OnboardingPage() {
           <Link href="/">
             <Logo size="sm" showTagline={false} />
           </Link>
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
-              Profile Setup
-            </span>
-          </div>
         </div>
       </header>
 
@@ -415,7 +443,7 @@ export default function OnboardingPage() {
                   Player Onboarding • Step {currentStep} of 3
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">
-                  {currentStep === 1 && "Basic Player Profile"}
+                  {currentStep === 1 && "Build Your Player Portfolio"}
                   {currentStep === 2 && "Log Your First Match"}
                   {currentStep === 3 && "AI Scouting Report Reveal"}
                 </h1>
@@ -450,7 +478,7 @@ export default function OnboardingPage() {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Tariq Ahmad"
+                    placeholder="e.g. Hamza Khan"
                     className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
                   />
                 </div>
@@ -491,16 +519,39 @@ export default function OnboardingPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
-                    City / Region
+                    City / Region (Pakistan)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="e.g. Karachi, Lahore, Islamabad"
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827]"
-                  />
+                  <select
+                    value={PAKISTAN_CITIES.includes(city) ? city : (isCustomCity || city ? 'Other' : 'Karachi')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'Other') {
+                        setCity('');
+                        setIsCustomCity(true);
+                      } else {
+                        setCity(val);
+                        setIsCustomCity(false);
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827] bg-white cursor-pointer font-medium"
+                  >
+                    {PAKISTAN_CITIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c === 'Other' ? 'Other City (Type below)...' : c}
+                      </option>
+                    ))}
+                  </select>
+
+                  {(isCustomCity || (!PAKISTAN_CITIES.includes(city) && city !== '')) && (
+                    <input
+                      type="text"
+                      placeholder="Type your city name (e.g. Kasur)..."
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#16A34A] text-[#111827] mt-2 font-medium"
+                      required
+                    />
+                  )}
                 </div>
 
                 <div>
@@ -859,16 +910,39 @@ export default function OnboardingPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#111827] uppercase tracking-wider mb-1.5">
-                    Primary Region / City
+                    Primary Region / City (Pakistan)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={scoutCity}
-                    onChange={(e) => setScoutCity(e.target.value)}
-                    placeholder="e.g. Karachi, Punjab, All Pakistan"
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#D97706] text-[#111827]"
-                  />
+                  <select
+                    value={PAKISTAN_CITIES.includes(scoutCity) ? scoutCity : (isCustomScoutCity || scoutCity ? 'Other' : 'Karachi')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === 'Other') {
+                        setScoutCity('');
+                        setIsCustomScoutCity(true);
+                      } else {
+                        setScoutCity(val);
+                        setIsCustomScoutCity(false);
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#D97706] text-[#111827] bg-white cursor-pointer font-medium"
+                  >
+                    {PAKISTAN_CITIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c === 'Other' ? 'Other Region (Type below)...' : c}
+                      </option>
+                    ))}
+                  </select>
+
+                  {(isCustomScoutCity || (!PAKISTAN_CITIES.includes(scoutCity) && scoutCity !== '')) && (
+                    <input
+                      type="text"
+                      placeholder="Type your scouting city or region (e.g. South Punjab)..."
+                      value={scoutCity}
+                      onChange={(e) => setScoutCity(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E5E7EB] focus:outline-none focus:ring-2 focus:ring-[#D97706] text-[#111827] mt-2 font-medium"
+                      required
+                    />
+                  )}
                 </div>
 
                 <div className="pt-3 flex justify-end">
