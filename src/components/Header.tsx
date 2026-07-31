@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UserRole } from '../types';
 import { Logo } from './Logo';
 import { AvatarDisplay } from './AvatarDisplay';
-import { Shield, UserCheck, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut, ChevronDown, Database, Sparkles } from 'lucide-react';
+import { Shield, UserCheck, BookmarkCheck, PlusCircle, LogIn, UserPlus, LogOut, ChevronDown, Database, User } from 'lucide-react';
 
 interface HeaderProps {
   currentRole: UserRole | null;
@@ -220,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({
                           }}
                           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-[#F8FAFC] text-[#374151] hover:text-[#16A34A] transition-colors cursor-pointer"
                         >
-                          <Sparkles className="w-4 h-4 text-[#D97706]" />
+                          <User className="w-4 h-4 text-[#6B7280]" />
                           <span>Change Mascot / Photo</span>
                         </button>
                       )}

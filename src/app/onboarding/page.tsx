@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUserProfile, selectUserRole, saveTalentBasics, saveMatchLog, saveScoutingReport, completeOnboarding, saveScoutPreferences } from '../../lib/supabase/helpers';
-import { UserCheck, Shield, ArrowRight, CheckCircle2, AlertCircle, PlusCircle, Sparkles, Trophy, Search, MapPin, User, ChevronRight, Activity, RotateCcw } from 'lucide-react';
+import { UserCheck, Shield, ArrowRight, CheckCircle2, AlertCircle, PlusCircle, Trophy, Search, MapPin, User, ChevronRight, Activity, RotateCcw, FileText, Award, Cpu } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '../../components/Logo';
 
@@ -726,7 +726,7 @@ export default function OnboardingPage() {
                     className="flex items-center gap-2 bg-[#16A34A] text-white hover:bg-[#15803D] px-6 py-2.5 rounded-xl font-bold text-sm shadow-xs transition-all cursor-pointer"
                   >
                     <span>Generate AI Scouting Report</span>
-                    <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    <FileText className="w-4 h-4 text-emerald-100" />
                   </button>
                 </div>
               </form>
@@ -739,7 +739,7 @@ export default function OnboardingPage() {
                 {generatingReport ? (
                   <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
                     <div className="w-12 h-12 rounded-2xl bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center animate-pulse">
-                      <Sparkles className="w-6 h-6 animate-spin" />
+                      <Cpu className="w-6 h-6 animate-pulse" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-[#111827]">Generating AI Scouting Note</h3>
@@ -751,7 +751,7 @@ export default function OnboardingPage() {
                 ) : aiReport ? (
                   <div className="space-y-6 animate-fadeIn">
                     <div className="flex items-center gap-2 text-xs font-bold text-[#16A34A] uppercase tracking-wider">
-                      <Sparkles className="w-4 h-4 fill-current" />
+                      <Award className="w-4 h-4" />
                       <span>Report Ready</span>
                     </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TalentProfile, Position, Match } from '../types';
-import { User, Activity, Sparkles, ArrowRight, CheckCircle2, Shield } from 'lucide-react';
+import { User, Activity, FileText, ArrowRight, CheckCircle2, Shield, Award } from 'lucide-react';
 import { ScoutingReportCard } from './ScoutingReportCard';
 
 interface TalentOnboardingModalProps {
@@ -359,7 +359,7 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
                   id="btn-generate-initial-report"
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-[#15803D] shadow-xs transition-all cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-[#FEF08A]" />
+                  <FileText className="w-4 h-4 text-emerald-200" />
                   <span>Generate AI Scouting Report</span>
                 </button>
               </div>
@@ -371,7 +371,7 @@ export const TalentOnboardingModal: React.FC<TalentOnboardingModalProps> = ({
             <div className="space-y-5">
               <div className="text-center pb-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-xs font-bold mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
+                  <Award className="w-3.5 h-3.5 text-[#D97706]" />
                   <span>Your Initial Scouting Dossier</span>
                 </span>
                 <h3 className="font-sans text-2xl font-bold text-[#111827]">

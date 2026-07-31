@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserCheck, Shield, Sparkles, ArrowRight, Activity, Award, Search, CheckCircle2, Zap } from 'lucide-react';
+import { UserCheck, Shield, Award, ArrowRight, Activity, Search, CheckCircle2, Zap } from 'lucide-react';
 
 interface LandingHeroProps {
   onSelectRole: (role: 'talent' | 'scout') => void;
@@ -17,7 +17,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAu
           
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-xs font-semibold border border-[#16A34A]/20">
-              <Sparkles className="w-3.5 h-3.5 text-[#D97706]" />
+              <Award className="w-3.5 h-3.5 text-[#D97706]" />
               <span className="font-bold uppercase tracking-widest text-[11px]">GET SCOUTED. GET SEEN.</span>
             </div>
 
@@ -71,7 +71,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAu
             {/* Single Clean Guest Mode Button */}
             <div className="mt-4 pt-3 border-t border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-[#6B7280] text-xs">
-                <Sparkles className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
+                <Zap className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
                 <span>Want to test first without creating an account?</span>
               </div>
               <button

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, Check, Sparkles, User, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Check, User, Image as ImageIcon } from 'lucide-react';
 
 export interface MascotOption {
   id: string;
@@ -165,7 +165,7 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
         {/* Modal Title */}
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-2xl bg-[#16A34A]/10 text-[#16A34A] flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
+            <User className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-lg font-sans font-bold text-[#111827]">
