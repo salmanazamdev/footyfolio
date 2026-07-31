@@ -43,43 +43,44 @@ export default function HomePage() {
       try {
         const { user, profile } = await getCurrentUserProfile();
 
-        let activeUser = user;
-        let activeProfile = profile;
-
-        // If no user/profile exists (first time visit or logged out), auto-create guest session for seamless preview
-        if (!activeUser || !activeProfile) {
-          const guest = startGuestSession('talent');
-          activeUser = guest.user;
-          activeProfile = guest.profile;
+        // If no real user and no guest session exists in localStorage, redirect to /login
+        if (!user || !profile) {
+          setLoading(false);
+          router.push('/login');
+          return;
         }
 
-        setUserProfile(activeProfile);
+        setUserProfile(profile);
 
-        if (!activeProfile.onboardingCompleted) {
+        if (!profile.onboardingCompleted) {
+          setLoading(false);
           router.push('/onboarding');
           return;
         }
 
-        const userRole = activeProfile.role || 'talent';
+        const userRole = profile.role || 'talent';
         setCurrentRole(userRole);
 
         if (userRole === 'talent') {
-          const tProfile = await getTalentProfileForUser(activeUser.id);
+          const tProfile = await getTalentProfileForUser(user.id);
           if (tProfile) {
             setTalentData(tProfile);
           }
         } else {
-          const sProfile = await getScoutPreferences(activeUser.id);
+          const sProfile = await getScoutPreferences(user.id);
           if (sProfile) {
             setScoutData(sProfile);
           }
           const feed = await getTalentsFeedForScout();
           setTalentsFeed(feed);
-          const sls = await getShortlistsForScout(activeUser.id);
+          const sls = await getShortlistsForScout(user.id);
           setShortlists(sls);
         }
       } catch (err) {
         console.error('Error initializing dashboard:', err);
+        setLoading(false);
+        router.push('/login');
+        return;
       } finally {
         setLoading(false);
       }
