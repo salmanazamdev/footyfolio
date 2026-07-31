@@ -84,10 +84,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onSelectRole, onOpenAu
 
         {/* Right Column: Featured AI Scouting Dossier Card Preview */}
         <div className="lg:col-span-5 relative">
-          <div className="bg-[#0F172A] p-5 sm:p-6 rounded-3xl border border-[#1E293B] shadow-xl relative overflow-hidden flex flex-col justify-center items-center">
+          <div className="bg-[#F8FAFC] p-5 sm:p-6 rounded-3xl border border-[#E5E7EB] shadow-sm relative flex flex-col justify-center items-center">
             
             {/* Dossier Card */}
-            <div className="bg-white text-[#111827] w-full p-5 sm:p-6 rounded-2xl shadow-sm relative z-10 border border-[#E5E7EB]">
+            <div className="bg-white text-[#111827] w-full p-5 sm:p-6 rounded-2xl shadow-sm relative z-10 border border-[#E5E7EB] border-l-4 border-l-[#16A34A]">
               
               <div className="border-b border-[#E5E7EB] pb-3 mb-4">
                 <h3 className="font-sans text-2xl font-bold text-[#111827]">Ahmed Khan, 19</h3>
