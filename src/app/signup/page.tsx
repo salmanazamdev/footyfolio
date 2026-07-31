@@ -170,14 +170,16 @@ export default function SignupPage() {
         });
 
         if (!error && data?.user) {
-          // Create initial profile record with onboarding_completed = false
+          // Sync guest data if guest session existed
+          await syncGuestDataToSupabaseUser(data.user.id);
+
+          // Create or update initial profile record
           await supabase
             .from('profiles')
             .upsert({
               id: data.user.id,
               name: fullName.trim(),
-              onboarding_completed: false,
-            });
+            }, { onConflict: 'id' });
 
           // Save to demo session as backup
           saveDemoUserSession(data.user, {
