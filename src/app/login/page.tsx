@@ -26,6 +26,8 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
+    if (getDemoUserSession()) return;
+
     if (supabaseConfigured) {
       const supabase = createClient();
       supabase.auth.getSession().then(async ({ data: { session } }) => {

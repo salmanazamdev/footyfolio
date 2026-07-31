@@ -76,12 +76,12 @@ export function startGuestSession(role?: 'talent' | 'scout', forceNew: boolean =
   const guestProfile: UserProfileData = {
     id: guestId,
     email: 'guest@footyfolio.local',
-    name: selectedRole ? (selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout') : '',
+    name: selectedRole ? (selectedRole === 'talent' ? 'Guest Player' : 'Guest Scout') : 'Guest User',
     role: selectedRole,
     age: selectedRole === 'talent' ? 19 : undefined,
     city: 'Karachi',
     avatarUrl: selectedRole === 'talent' ? 'mascot:mascot-lion' : selectedRole === 'scout' ? 'mascot:mascot-eagle' : undefined,
-    onboardingCompleted: false,
+    onboardingCompleted: true,
   };
 
   saveDemoUserSession(guestUser, guestProfile);
@@ -160,6 +160,12 @@ export async function syncGuestDataToSupabaseUser(userId: string) {
 
 // 1. Get current logged in user and profile
 export async function getCurrentUserProfile(): Promise<{ user: any; profile: UserProfileData | null }> {
+  // Check local demo / guest session FIRST if active
+  const demoSession = getDemoUserSession();
+  if (demoSession) {
+    return demoSession;
+  }
+
   if (isSupabaseConfigured()) {
     try {
       const supabase = createClient();
@@ -210,9 +216,9 @@ export async function getCurrentUserProfile(): Promise<{ user: any; profile: Use
   }
 
   // Fallback to local demo session if Supabase is unconfigured or unavailable
-  const demoSession = getDemoUserSession();
-  if (demoSession) {
-    return demoSession;
+  const fallbackDemo = getDemoUserSession();
+  if (fallbackDemo) {
+    return fallbackDemo;
   }
 
   return { user: null, profile: null };
