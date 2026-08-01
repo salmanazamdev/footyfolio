@@ -198,22 +198,55 @@ export default function HomePage() {
   const handleUpdateTalent = async (updated: TalentProfile) => {
     setTalentData(updated);
 
-    // Persist new match and report to Supabase if user is logged in
-    if (userProfile?.id && supabaseConfigured) {
+    const userId = userProfile?.id || updated.userId || updated.id;
+
+    // Update in talentsFeed as well
+    setTalentsFeed((prevFeed) =>
+      prevFeed.map((item) =>
+        item.userId === userId || item.id === userId
+          ? {
+              ...item,
+              matches: updated.matches,
+              latestReport: updated.latestReport || item.latestReport,
+            }
+          : item
+      )
+    );
+
+    // Save matches list to LocalStorage
+    if (userId && typeof window !== 'undefined') {
       try {
-        if (updated.matches.length > 0) {
-          const latestMatch = updated.matches[0];
-          await saveMatchLog(userProfile.id, {
-            opponent: latestMatch.opponent || 'Match',
-            goals: latestMatch.goals,
-            assists: latestMatch.assists,
-            minutesPlayed: latestMatch.minutesPlayed,
-            notes: latestMatch.notes,
-            matchDate: latestMatch.matchDate,
+        const matchesStorageKey = 'footyfolio_user_matches_' + userId;
+        const mappedForStorage = updated.matches.map((m) => ({
+          id: m.id,
+          profile_id: userId,
+          opponent: m.opponent,
+          goals: m.goals,
+          assists: m.assists,
+          minutes_played: m.minutesPlayed,
+          notes: m.notes,
+          match_date: m.matchDate,
+        }));
+        localStorage.setItem(matchesStorageKey, JSON.stringify(mappedForStorage));
+      } catch (e) {}
+    }
+
+    // Persist to Supabase if user is logged in
+    if (userId && supabaseConfigured) {
+      try {
+        for (const m of updated.matches) {
+          await saveMatchLog(userId, {
+            id: m.id,
+            opponent: m.opponent || 'Match',
+            goals: m.goals,
+            assists: m.assists,
+            minutesPlayed: m.minutesPlayed,
+            notes: m.notes,
+            matchDate: m.matchDate,
           });
         }
         if (updated.latestReport) {
-          await saveScoutingReport(userProfile.id, {
+          await saveScoutingReport(userId, {
             summary: updated.latestReport.summary,
             strengths: updated.latestReport.strengths,
             areasToDevelop: updated.latestReport.areasToDevelop,

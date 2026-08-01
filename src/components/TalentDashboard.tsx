@@ -3,7 +3,7 @@ import { TalentProfile, Match, ScoutingReport } from '../types';
 import { ScoutingReportCard } from './ScoutingReportCard';
 import { LogMatchModal } from './LogMatchModal';
 import { AvatarDisplay } from './AvatarDisplay';
-import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar, RefreshCw, Mail, Camera } from 'lucide-react';
+import { UserCheck, PlusCircle, MapPin, Activity, Award, BookmarkCheck, Calendar, RefreshCw, Mail, Camera, Edit3, Trash2 } from 'lucide-react';
 
 interface TalentDashboardProps {
   talent: TalentProfile;
@@ -13,11 +13,22 @@ interface TalentDashboardProps {
 
 export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpdateTalent, onOpenAvatarModal }) => {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const totalGoals = talent.matches.reduce((acc, m) => acc + (m.goals || 0), 0);
   const totalAssists = talent.matches.reduce((acc, m) => acc + (m.assists || 0), 0);
   const totalMinutes = talent.matches.reduce((acc, m) => acc + (m.minutesPlayed || 0), 0);
+
+  const handleOpenAddModal = () => {
+    setEditingMatch(null);
+    setIsLogModalOpen(true);
+  };
+
+  const handleOpenEditModal = (match: Match) => {
+    setEditingMatch(match);
+    setIsLogModalOpen(true);
+  };
 
   // Trigger Gemini API to regenerate report
   const handleRegenerateReport = async (updatedMatches: Match[]) => {
@@ -53,23 +64,48 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
           latestReport: newReport
         };
         onUpdateTalent(updatedProfile);
+      } else {
+        // Fallback update without new report if API fails
+        onUpdateTalent({
+          ...talent,
+          matches: updatedMatches
+        });
       }
     } catch (err) {
       console.error('Error generating scouting report:', err);
+      onUpdateTalent({
+        ...talent,
+        matches: updatedMatches
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleAddMatch = async (matchData: Omit<Match, 'id' | 'talentProfileId'>) => {
-    const newMatch: Match = {
-      id: 'm-' + Date.now(),
-      talentProfileId: talent.id,
-      ...matchData
-    };
+  const handleSaveMatch = async (matchData: Omit<Match, 'id' | 'talentProfileId'>, matchId?: string) => {
+    let updatedMatches: Match[];
+    if (matchId) {
+      // Edit existing match
+      updatedMatches = talent.matches.map((m) =>
+        m.id === matchId ? { ...m, ...matchData } : m
+      );
+    } else {
+      // Add new match
+      const newMatch: Match = {
+        id: 'm-' + Date.now(),
+        talentProfileId: talent.id,
+        ...matchData
+      };
+      updatedMatches = [newMatch, ...talent.matches];
+    }
 
-    const updatedMatches = [newMatch, ...talent.matches];
     setIsLogModalOpen(false);
+    setEditingMatch(null);
+    await handleRegenerateReport(updatedMatches);
+  };
+
+  const handleDeleteMatch = async (matchId: string) => {
+    const updatedMatches = talent.matches.filter((m) => m.id !== matchId);
     await handleRegenerateReport(updatedMatches);
   };
 
@@ -115,7 +151,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         {/* Action button */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
-            onClick={() => setIsLogModalOpen(true)}
+            onClick={handleOpenAddModal}
             id="btn-talent-dash-log-match"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#D97706] text-white hover:bg-[#B45309] text-xs font-bold shadow-sm transition-all active:scale-98 cursor-pointer"
           >
@@ -217,7 +253,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
                 <span>Logged Matches & Stats</span>
               </h2>
               <button
-                onClick={() => setIsLogModalOpen(true)}
+                onClick={handleOpenAddModal}
                 className="text-xs text-[#16A34A] hover:underline font-bold cursor-pointer"
               >
                 + Log your match
@@ -229,7 +265,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
                 <p className="font-sans text-base font-bold text-[#111827]">No matches logged yet</p>
                 <p className="text-xs text-[#6B7280] mt-1 mb-4">Log your match performance to generate your AI scout write-up.</p>
                 <button
-                  onClick={() => setIsLogModalOpen(true)}
+                  onClick={handleOpenAddModal}
                   className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-bold cursor-pointer hover:bg-[#15803D]"
                 >
                   Log First Match
@@ -238,8 +274,8 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
             ) : (
               <div className="space-y-3">
                 {talent.matches.map((m) => (
-                  <div key={m.id} className="p-4 bg-white rounded-2xl border border-[#E5E7EB] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#16A34A]/40 transition-colors">
-                    <div>
+                  <div key={m.id} className="p-4 bg-white rounded-2xl border border-[#E5E7EB] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#16A34A]/40 transition-colors group">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-sans text-base font-bold text-[#111827]">
                           vs. {m.opponent || 'Opponent'}
@@ -264,6 +300,27 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
                       <span className="px-3 py-1 rounded-full bg-[#F1F5F9] text-[#111827] text-xs font-mono font-medium">
                         {m.minutesPlayed}'
                       </span>
+
+                      <div className="flex items-center gap-1 border-l border-[#E5E7EB] pl-2 ml-1">
+                        <button
+                          onClick={() => handleOpenEditModal(m)}
+                          title="Edit match log"
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#16A34A] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Delete this match log?')) {
+                              handleDeleteMatch(m.id);
+                            }
+                          }}
+                          title="Delete match log"
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#DC2626] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -322,12 +379,17 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
 
       </div>
 
-      {/* Log Match Modal */}
+      {/* Log / Edit Match Modal */}
       <LogMatchModal
         isOpen={isLogModalOpen}
-        onClose={() => setIsLogModalOpen(false)}
-        onSubmitMatch={handleAddMatch}
+        onClose={() => {
+          setIsLogModalOpen(false);
+          setEditingMatch(null);
+        }}
+        onSubmitMatch={handleSaveMatch}
+        onDeleteMatch={handleDeleteMatch}
         isGeneratingReport={isGenerating}
+        editingMatch={editingMatch}
       />
 
     </div>

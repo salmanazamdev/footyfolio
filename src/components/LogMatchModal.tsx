@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Match } from '../types';
-import { X, PlusCircle, Activity, FileText } from 'lucide-react';
+import { X, PlusCircle, Activity, Trash2, Edit3, Save } from 'lucide-react';
 
 interface LogMatchModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitMatch: (matchData: Omit<Match, 'id' | 'talentProfileId'>) => void;
+  onSubmitMatch: (matchData: Omit<Match, 'id' | 'talentProfileId'>, matchId?: string) => void;
+  onDeleteMatch?: (matchId: string) => void;
   isGeneratingReport?: boolean;
+  editingMatch?: Match | null;
 }
 
 export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   isOpen,
   onClose,
   onSubmitMatch,
-  isGeneratingReport = false
+  onDeleteMatch,
+  isGeneratingReport = false,
+  editingMatch = null,
 }) => {
   const [goals, setGoals] = useState<string>('0');
   const [assists, setAssists] = useState<string>('0');
@@ -21,6 +25,24 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   const [opponent, setOpponent] = useState<string>('');
   const [matchDate, setMatchDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
+
+  useEffect(() => {
+    if (editingMatch) {
+      setGoals(editingMatch.goals?.toString() || '0');
+      setAssists(editingMatch.assists?.toString() || '0');
+      setMinutesPlayed(editingMatch.minutesPlayed?.toString() || '90');
+      setOpponent(editingMatch.opponent || '');
+      setMatchDate(editingMatch.matchDate || new Date().toISOString().split('T')[0]);
+      setNotes(editingMatch.notes || '');
+    } else {
+      setGoals('0');
+      setAssists('0');
+      setMinutesPlayed('90');
+      setOpponent('');
+      setMatchDate(new Date().toISOString().split('T')[0]);
+      setNotes('');
+    }
+  }, [editingMatch, isOpen]);
 
   if (!isOpen) return null;
 
@@ -30,20 +52,33 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
     const aVal = assists === '' ? 0 : Math.max(0, parseInt(assists, 10) || 0);
     const mVal = minutesPlayed === '' ? 90 : Math.max(1, parseInt(minutesPlayed, 10) || 90);
 
-    onSubmitMatch({
-      goals: gVal,
-      assists: aVal,
-      minutesPlayed: mVal,
-      opponent: opponent || 'Opponent FC',
-      matchDate,
-      notes: notes || 'Match performance logged.'
-    });
+    onSubmitMatch(
+      {
+        goals: gVal,
+        assists: aVal,
+        minutesPlayed: mVal,
+        opponent: opponent || 'Opponent FC',
+        matchDate,
+        notes: notes || 'Match performance logged.',
+      },
+      editingMatch?.id
+    );
+
     // Reset form
     setGoals('0');
     setAssists('0');
     setMinutesPlayed('90');
     setOpponent('');
     setNotes('');
+  };
+
+  const handleDelete = () => {
+    if (editingMatch && onDeleteMatch) {
+      if (window.confirm('Are you sure you want to delete this match log?')) {
+        onDeleteMatch(editingMatch.id);
+        onClose();
+      }
+    }
   };
 
   return (
@@ -59,8 +94,10 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
         {/* Modal Header */}
         <div className="shrink-0 bg-[#16A34A] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-[#D97706]" />
-            <h3 className="font-sans text-xl font-bold">Log Your Match</h3>
+            {editingMatch ? <Edit3 className="w-5 h-5 text-[#D97706]" /> : <Activity className="w-5 h-5 text-[#D97706]" />}
+            <h3 className="font-sans text-xl font-bold">
+              {editingMatch ? 'Edit Match Log' : 'Log Your Match'}
+            </h3>
           </div>
           <button
             onClick={onClose}
@@ -216,23 +253,42 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
             />
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-[#E5E7EB]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-[#111827] hover:bg-[#F1F5F9] cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isGeneratingReport}
-              id="btn-submit-log-match"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16A34A] text-white text-xs font-semibold hover:bg-[#15803D] shadow-xs transition-all disabled:opacity-50 cursor-pointer"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>{isGeneratingReport ? 'Generating Scouting Report...' : 'Save & Generate Scouting Report'}</span>
-            </button>
+          <div className="pt-2 flex items-center justify-between border-t border-[#E5E7EB]">
+            {editingMatch && onDeleteMatch ? (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-[#DC2626] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete Log</span>
+              </button>
+            ) : <div />}
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-[#111827] hover:bg-[#F1F5F9] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isGeneratingReport}
+                id="btn-submit-log-match"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16A34A] text-white text-xs font-semibold hover:bg-[#15803D] shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {editingMatch ? <Save className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+                <span>
+                  {isGeneratingReport
+                    ? 'Updating Scouting Report...'
+                    : editingMatch
+                    ? 'Save Changes & Refresh Report'
+                    : 'Save & Generate Scouting Report'}
+                </span>
+              </button>
+            </div>
           </div>
 
         </form>

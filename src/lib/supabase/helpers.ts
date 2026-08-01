@@ -426,6 +426,7 @@ export async function saveTalentBasics(userId: string, data: { name: string; age
 
 // 4. Log a match for talent
 export async function saveMatchLog(userId: string, matchData: {
+  id?: string;
   opponent: string;
   goals: number;
   assists: number;
@@ -433,8 +434,9 @@ export async function saveMatchLog(userId: string, matchData: {
   notes: string;
   matchDate?: string;
 }) {
-  const newMatchItem = {
-    id: 'match-' + Date.now(),
+  const matchId = matchData.id || 'match-' + Date.now();
+  const matchItem = {
+    id: matchId,
     profile_id: userId,
     opponent: matchData.opponent || 'Competitive Match',
     goals: matchData.goals || 0,
@@ -448,8 +450,13 @@ export async function saveMatchLog(userId: string, matchData: {
     try {
       const existingKey = 'footyfolio_user_matches_' + userId;
       const raw = localStorage.getItem(existingKey);
-      const list = raw ? JSON.parse(raw) : [];
-      list.unshift(newMatchItem);
+      let list = raw ? JSON.parse(raw) : [];
+      const index = list.findIndex((m: any) => m.id === matchId);
+      if (index >= 0) {
+        list[index] = { ...list[index], ...matchItem };
+      } else {
+        list.unshift(matchItem);
+      }
       localStorage.setItem(existingKey, JSON.stringify(list));
     } catch (e) {}
   }
@@ -457,27 +464,68 @@ export async function saveMatchLog(userId: string, matchData: {
   if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from('matches')
-        .insert({
-          profile_id: userId,
-          opponent: matchData.opponent || 'Competitive Match',
-          goals: matchData.goals || 0,
-          assists: matchData.assists || 0,
-          minutes_played: matchData.minutesPlayed || 0,
-          notes: matchData.notes || '',
-          match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
-        })
-        .select()
-        .single();
+      if (matchData.id) {
+        // Update existing match
+        const { data, error } = await supabase
+          .from('matches')
+          .update({
+            opponent: matchData.opponent || 'Competitive Match',
+            goals: matchData.goals || 0,
+            assists: matchData.assists || 0,
+            minutes_played: matchData.minutesPlayed || 0,
+            notes: matchData.notes || '',
+            match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
+          })
+          .eq('id', matchData.id)
+          .select()
+          .single();
 
-      if (!error && data) return data;
+        if (!error && data) return data;
+      } else {
+        // Insert new match
+        const { data, error } = await supabase
+          .from('matches')
+          .insert({
+            profile_id: userId,
+            opponent: matchData.opponent || 'Competitive Match',
+            goals: matchData.goals || 0,
+            assists: matchData.assists || 0,
+            minutes_played: matchData.minutesPlayed || 0,
+            notes: matchData.notes || '',
+            match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
+          })
+          .select()
+          .single();
+
+        if (!error && data) return data;
+      }
     } catch (e) {
-      console.warn('Supabase match log failed, saving locally:', e);
+      console.warn('Supabase match log/update failed, saving locally:', e);
     }
   }
 
-  return newMatchItem;
+  return matchItem;
+}
+
+export async function deleteMatchLog(userId: string, matchId: string) {
+  if (typeof window !== 'undefined') {
+    try {
+      const existingKey = 'footyfolio_user_matches_' + userId;
+      const raw = localStorage.getItem(existingKey);
+      let list = raw ? JSON.parse(raw) : [];
+      list = list.filter((m: any) => m.id !== matchId);
+      localStorage.setItem(existingKey, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
+    try {
+      const supabase = createClient();
+      await supabase.from('matches').delete().eq('id', matchId);
+    } catch (e) {
+      console.warn('Supabase delete match failed:', e);
+    }
+  }
 }
 
 // 5. Save AI Scouting Report
