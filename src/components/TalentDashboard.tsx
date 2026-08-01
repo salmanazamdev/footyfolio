@@ -38,6 +38,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: talent.userId || talent.id,
           name: talent.name,
           age: talent.age,
           position: talent.position,
@@ -47,6 +48,11 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
       });
 
       const data = await res.json();
+
+      if (res.status === 429) {
+        alert(data.error || "You're generating reports too quickly, try again in a bit.");
+      }
+
       if (data?.report) {
         const newReport: ScoutingReport = {
           id: 'rep-' + Date.now(),
@@ -65,6 +71,9 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         };
         onUpdateTalent(updatedProfile);
       } else {
+        if (data?.error && res.status !== 429) {
+          alert(data.error);
+        }
         // Fallback update without new report if API fails
         onUpdateTalent({
           ...talent,

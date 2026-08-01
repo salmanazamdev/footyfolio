@@ -1,5 +1,27 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
+import { Redis } from '@upstash/redis';
+import { Ratelimit } from '@upstash/ratelimit';
+
+// Initialize Ratelimit instance lazily if Upstash Redis env vars are present
+let ratelimit: Ratelimit | null = null;
+
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  try {
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+
+    ratelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, '1 h'),
+      prefix: 'footyfolio_ratelimit',
+    });
+  } catch (err) {
+    console.warn('Failed to initialize Upstash Redis rate limiter:', err);
+  }
+}
 
 const getGenAIClient = () => {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -19,10 +41,90 @@ const getGenAIClient = () => {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, age, position, city, matches } = body;
+    const { name, age, position, city, matches, userId } = body;
 
-    if (!name || !position || !matches || !Array.isArray(matches)) {
-      return NextResponse.json({ error: 'Missing required player or match details.' }, { status: 400 });
+    // 1. Upstash Redis Rate Limiting Check (10 requests per user per hour)
+    if (ratelimit) {
+      const forwardedFor = request.headers.get('x-forwarded-for');
+      const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : request.headers.get('x-real-ip') || 'anonymous_ip';
+      const identifier = userId || request.headers.get('x-user-id') || ip;
+
+      const { success, limit, remaining, reset } = await ratelimit.limit(`ratelimit:${identifier}`);
+
+      if (!success) {
+        return NextResponse.json(
+          {
+            error: "You're generating reports too quickly, try again in a bit",
+            limit,
+            remaining,
+            reset,
+          },
+          {
+            status: 429,
+            headers: {
+              'X-RateLimit-Limit': limit.toString(),
+              'X-RateLimit-Remaining': remaining.toString(),
+              'X-RateLimit-Reset': reset.toString(),
+            },
+          }
+        );
+      }
+    }
+
+    // 2. Input Validation
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return NextResponse.json({ error: 'Player name is required.' }, { status: 400 });
+    }
+
+    if (!position || typeof position !== 'string') {
+      return NextResponse.json({ error: 'Player position is required.' }, { status: 400 });
+    }
+
+    if (!matches || !Array.isArray(matches) || matches.length === 0) {
+      return NextResponse.json({ error: 'At least one match log is required to generate a scouting report.' }, { status: 400 });
+    }
+
+    for (let i = 0; i < matches.length; i++) {
+      const m = matches[i];
+      const goals = Number(m.goals) || 0;
+      const assists = Number(m.assists) || 0;
+      const minutes = Number(m.minutesPlayed) || 0;
+      const notes = m.notes ? String(m.notes) : '';
+
+      if (goals < 0) {
+        return NextResponse.json(
+          { error: `Invalid goals count (${m.goals}) in match ${i + 1}. Goals cannot be negative.` },
+          { status: 400 }
+        );
+      }
+
+      if (assists < 0) {
+        return NextResponse.json(
+          { error: `Invalid assists count (${m.assists}) in match ${i + 1}. Assists cannot be negative.` },
+          { status: 400 }
+        );
+      }
+
+      if (minutes < 0) {
+        return NextResponse.json(
+          { error: `Invalid minutes played (${m.minutesPlayed}) in match ${i + 1}. Minutes cannot be negative.` },
+          { status: 400 }
+        );
+      }
+
+      if (minutes > 120) {
+        return NextResponse.json(
+          { error: `Invalid minutes played (${m.minutesPlayed}) in match ${i + 1}. Maximum allowed is 120 minutes per match.` },
+          { status: 400 }
+        );
+      }
+
+      if (notes.length > 1000) {
+        return NextResponse.json(
+          { error: `Match notes in match ${i + 1} exceed maximum limit of 1000 characters.` },
+          { status: 400 }
+        );
+      }
     }
 
     const totalGoals = matches.reduce((acc: number, m: any) => acc + (Number(m.goals) || 0), 0);
