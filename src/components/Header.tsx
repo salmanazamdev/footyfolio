@@ -228,8 +228,8 @@ export const Header: React.FC<HeaderProps> = ({
                           }}
                           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-[#F8FAFC] text-[#374151] hover:text-[#16A34A] transition-colors cursor-pointer"
                         >
-                          <User className="w-4 h-4 text-[#6B7280]" />
-                          <span>Change Mascot / Photo</span>
+                          <User className="w-4 h-4 text-[#16A34A]" />
+                          <span className="font-bold">Edit Profile & Mascot</span>
                         </button>
                       )}
 

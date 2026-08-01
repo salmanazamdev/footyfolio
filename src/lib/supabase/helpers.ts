@@ -315,6 +315,75 @@ export async function updateUserProfileAvatar(userId: string, avatarUrl: string)
   }
 }
 
+// Full profile update (Name, Bio, City, Age, Position/Organization, AvatarUrl)
+export async function updateUserProfileFull(
+  userId: string,
+  role: 'talent' | 'scout' | null,
+  data: {
+    name: string;
+    bio?: string;
+    city?: string;
+    age?: number;
+    position?: string;
+    organization?: string;
+    avatarUrl?: string;
+  }
+) {
+  if (isSupabaseConfigured() && !isGuestId(userId)) {
+    try {
+      const supabase = createClient();
+      await supabase
+        .from('profiles')
+        .update({
+          name: data.name,
+          city: data.city || null,
+          age: data.age || null,
+          avatar_url: data.avatarUrl || null,
+        })
+        .eq('id', userId);
+
+      if (role === 'talent') {
+        await supabase
+          .from('talent_details')
+          .upsert({
+            profile_id: userId,
+            position: data.position || 'Forward',
+            bio: data.bio || '',
+          }, { onConflict: 'profile_id' });
+      } else if (role === 'scout') {
+        await supabase
+          .from('scout_profiles')
+          .upsert({
+            user_id: userId,
+            name: data.name,
+            organization: data.organization || 'Independent Scout',
+          }, { onConflict: 'user_id' });
+      }
+    } catch (e) {
+      console.warn('Supabase profile full update failed:', e);
+    }
+  }
+
+  // Update demo user session
+  const demo = getDemoUserSession();
+  if (demo) {
+    demo.profile.name = data.name;
+    if (data.city) demo.profile.city = data.city;
+    if (data.age) demo.profile.age = data.age;
+    if (data.avatarUrl) demo.profile.avatarUrl = data.avatarUrl;
+    if (data.position) (demo.profile as any).position = data.position;
+    if (data.bio !== undefined) (demo.profile as any).bio = data.bio;
+    if (data.organization) (demo.profile as any).organization = data.organization;
+    saveDemoUserSession(demo.user, demo.profile);
+  }
+
+  // Fallback localStorage keys for fast reload
+  if (typeof window !== 'undefined') {
+    if (data.avatarUrl) localStorage.setItem(`footyfolio_avatar_${userId}`, data.avatarUrl);
+    localStorage.setItem(`footyfolio_name_${userId}`, data.name);
+  }
+}
+
 // 3. Save Talent Onboarding Step 1 (Basics)
 export async function saveTalentBasics(userId: string, data: { name: string; age: number; position: string; city: string; bio?: string }) {
   if (isSupabaseConfigured() && !isGuestId(userId)) {

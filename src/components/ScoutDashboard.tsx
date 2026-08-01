@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TalentProfile, ScoutProfile, Position, ShortlistItem } from '../types';
-import { Search, Filter, MapPin, Award, BookmarkCheck, ArrowUpRight, Shield, Check, ShieldCheck, Footprints } from 'lucide-react';
+import { Search, Filter, MapPin, Award, BookmarkCheck, ArrowUpRight, Shield, Check, ShieldCheck, Footprints, Camera } from 'lucide-react';
 import { TalentDetailModal } from './TalentDetailModal';
 import { AvatarDisplay } from './AvatarDisplay';
 
@@ -11,6 +11,7 @@ interface ScoutDashboardProps {
   onToggleShortlist: (talentId: string) => void;
   activeTab: 'feed' | 'shortlist';
   onTabChange: (tab: 'feed' | 'shortlist') => void;
+  onOpenAvatarModal?: () => void;
 }
 
 const CITIES = ['All Cities', 'Lahore', 'Karachi', 'Islamabad', 'Peshawar', 'Rawalpindi', 'Quetta', 'Faisalabad', 'Sialkot'];
@@ -28,7 +29,8 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
   shortlists,
   onToggleShortlist,
   activeTab,
-  onTabChange
+  onTabChange,
+  onOpenAvatarModal,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPosition, setSelectedPosition] = useState<'all' | Position>('all');
@@ -72,26 +74,51 @@ export const ScoutDashboard: React.FC<ScoutDashboardProps> = ({
       
       {/* Scout Header Banner */}
       <div className="rounded-2xl sm:rounded-3xl bg-[#D97706] text-white p-5 sm:p-6 lg:p-8 shadow-sm border border-[#E5E7EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
-              {scoutProfile.organization || 'Official Scout'}
-            </span>
-            <span className="text-xs font-semibold text-white/90 flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5" />
-              Scout Discovery Mode
-            </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+          {/* Scout Avatar with click edit */}
+          <div
+            onClick={onOpenAvatarModal}
+            className="relative group cursor-pointer shrink-0"
+            title="Click to edit scout profile & mascot"
+          >
+            <AvatarDisplay avatarUrl={scoutProfile.avatarUrl} name={scoutProfile.name} size="xl" />
+            {onOpenAvatarModal && (
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#111827] text-white flex items-center justify-center border-2 border-white shadow-xs group-hover:bg-[#16A34A] transition-colors">
+                <Camera className="w-3.5 h-3.5" />
+              </div>
+            )}
           </div>
-          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white">
-            Welcome back, {scoutProfile.name}
-          </h1>
-          <p className="text-xs text-white/90 mt-1 max-w-xl">
-            {talents.length} players match your scouting criteria. Review AI scouting reports, compare match logs, and shortlist local talent.
-          </p>
+
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold">
+                {scoutProfile.organization || 'Official Scout'}
+              </span>
+              <span className="text-xs font-semibold text-white/90 flex items-center gap-1">
+                <Shield className="w-3.5 h-3.5" />
+                Scout Discovery Mode
+              </span>
+            </div>
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-white">
+              Welcome back, {scoutProfile.name}
+            </h1>
+            <p className="text-xs text-white/90 mt-1 max-w-xl">
+              {talents.length} players match your scouting criteria. Review AI scouting reports, compare match logs, and shortlist local talent.
+            </p>
+          </div>
         </div>
 
-        {/* Shortlist Counter Badge */}
+        {/* Shortlist Counter & Edit Profile Button */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          {onOpenAvatarModal && (
+            <button
+              onClick={onOpenAvatarModal}
+              className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0"
+            >
+              <Camera className="w-4 h-4" />
+              <span className="hidden md:inline">Edit Profile</span>
+            </button>
+          )}
           <div className="bg-[#111827] text-white p-3.5 sm:p-4 rounded-2xl text-center w-full sm:min-w-32 shadow-xs flex sm:flex-col justify-between sm:justify-center items-center">
             <span className="text-[10px] font-mono uppercase text-[#D97706] font-bold block">Shortlisted</span>
             <span className="font-sans text-xl sm:text-2xl font-bold text-white">{shortlists.length} Players</span>

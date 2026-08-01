@@ -45,6 +45,9 @@ export interface ScoutProfile {
   userId: string;
   name: string;
   organization?: string;
+  bio?: string;
+  city?: string;
+  avatarUrl?: string;
   targetPositions: Position[];
   targetCities: string[];
   createdAt: string;

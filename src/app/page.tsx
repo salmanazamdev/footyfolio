@@ -8,11 +8,11 @@ import { Header } from '../components/Header';
 import { TalentDashboard } from '../components/TalentDashboard';
 import { ScoutDashboard } from '../components/ScoutDashboard';
 import { SupabaseConfigModal } from '../components/SupabaseConfigModal';
-import { AvatarSelectorModal } from '../components/AvatarSelectorModal';
+import { AvatarSelectorModal, ProfileData } from '../components/AvatarSelectorModal';
 import { AuthModal } from '../components/AuthModal';
 import { LandingPage } from '../components/LandingPage';
 import { createClient } from '../lib/supabase/client';
-import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, clearDemoUserSession, startGuestSession } from '../lib/supabase/helpers';
+import { getCurrentUserProfile, getTalentProfileForUser, getTalentsFeedForScout, getScoutPreferences, isSupabaseConfigured, saveMatchLog, saveScoutingReport, getShortlistsForScout, toggleShortlistInSupabase, updateUserProfileAvatar, updateUserProfileFull, clearDemoUserSession, startGuestSession } from '../lib/supabase/helpers';
 import { TalentProfile, ScoutProfile, ShortlistItem, Match, ScoutingReport } from '../types';
 import { LogOut, AlertTriangle, UserCheck, Shield } from 'lucide-react';
 
@@ -109,9 +109,62 @@ export default function HomePage() {
     if (talentData) {
       setTalentData({ ...talentData, avatarUrl: newAvatarUrl });
     }
+    if (scoutData) {
+      setScoutData({ ...scoutData, avatarUrl: newAvatarUrl });
+    }
 
     const userId = userProfile?.id || 'demo-user';
     await updateUserProfileAvatar(userId, newAvatarUrl);
+  };
+
+  const handleSaveFullProfile = async (updated: ProfileData) => {
+    const userId = userProfile?.id || 'demo-user';
+
+    // 1. Update user profile state
+    setUserProfile((prev: any) => ({
+      ...prev,
+      name: updated.name,
+      city: updated.city || prev?.city,
+      age: updated.age || prev?.age,
+      avatarUrl: updated.avatarUrl || prev?.avatarUrl,
+    }));
+
+    // 2. Update role specific state
+    if (currentRole === 'talent' && talentData) {
+      const updatedTalent: TalentProfile = {
+        ...talentData,
+        name: updated.name,
+        bio: updated.bio || '',
+        city: updated.city || talentData.city,
+        age: updated.age || talentData.age,
+        position: updated.position || talentData.position,
+        avatarUrl: updated.avatarUrl || talentData.avatarUrl,
+      };
+      setTalentData(updatedTalent);
+    } else if (currentRole === 'scout') {
+      const updatedScout: ScoutProfile = {
+        id: scoutData?.id || 'scout-' + userId,
+        userId: userId,
+        name: updated.name,
+        organization: updated.organization || scoutData?.organization || 'Independent Scout',
+        avatarUrl: updated.avatarUrl || scoutData?.avatarUrl,
+        targetPositions: scoutData?.targetPositions || ['forward', 'midfielder'],
+        targetCities: scoutData?.targetCities || ['Karachi', 'Lahore'],
+        createdAt: scoutData?.createdAt || new Date().toISOString(),
+      };
+      setScoutData(updatedScout);
+    }
+
+    // 3. Persist via helper
+    await updateUserProfileFull(userId, currentRole, {
+      name: updated.name,
+      bio: updated.bio,
+      city: updated.city,
+      age: updated.age,
+      position: updated.position,
+      organization: updated.organization,
+      avatarUrl: updated.avatarUrl,
+    });
   };
 
   const handleUpdateTalent = async (updated: TalentProfile) => {
@@ -277,6 +330,7 @@ export default function HomePage() {
             onToggleShortlist={handleToggleShortlist}
             activeTab={scoutTab}
             onTabChange={setScoutTab}
+            onOpenAvatarModal={() => setIsAvatarModalOpen(true)}
           />
         )}
       </main>
@@ -287,12 +341,23 @@ export default function HomePage() {
         onClose={() => setIsSchemaModalOpen(false)}
       />
 
-      {/* Avatar / Mascot Selector Modal */}
+      {/* Edit Profile & Mascot Selector Modal */}
       <AvatarSelectorModal
         isOpen={isAvatarModalOpen}
         onClose={() => setIsAvatarModalOpen(false)}
-        currentAvatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl}
+        currentAvatarUrl={userProfile?.avatarUrl || talentData?.avatarUrl || scoutData?.avatarUrl}
+        profile={{
+          name: talentData?.name || scoutData?.name || userProfile?.name || '',
+          bio: talentData?.bio || '',
+          city: talentData?.city || userProfile?.city || 'Lahore',
+          age: talentData?.age || userProfile?.age || 19,
+          position: talentData?.position || 'forward',
+          organization: scoutData?.organization || 'Independent Scout',
+          avatarUrl: userProfile?.avatarUrl || talentData?.avatarUrl || scoutData?.avatarUrl,
+          role: currentRole,
+        }}
         onSelectAvatar={handleUpdateAvatar}
+        onSaveProfile={handleSaveFullProfile}
       />
 
       {/* Cloud Account Sync / Auth Modal */}
