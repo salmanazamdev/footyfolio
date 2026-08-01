@@ -204,9 +204,7 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
 
     if (onSaveProfile) {
       onSaveProfile(updatedData);
-    }
-
-    if (onSelectAvatar && finalAvatar) {
+    } else if (onSelectAvatar && finalAvatar) {
       onSelectAvatar(finalAvatar);
     }
 

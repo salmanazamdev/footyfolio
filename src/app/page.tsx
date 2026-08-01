@@ -106,12 +106,8 @@ export default function HomePage() {
 
   const handleUpdateAvatar = async (newAvatarUrl: string) => {
     setUserProfile((prev: any) => (prev ? { ...prev, avatarUrl: newAvatarUrl } : { avatarUrl: newAvatarUrl }));
-    if (talentData) {
-      setTalentData({ ...talentData, avatarUrl: newAvatarUrl });
-    }
-    if (scoutData) {
-      setScoutData({ ...scoutData, avatarUrl: newAvatarUrl });
-    }
+    setTalentData((prev) => (prev ? { ...prev, avatarUrl: newAvatarUrl } : prev));
+    setScoutData((prev) => (prev ? { ...prev, avatarUrl: newAvatarUrl } : prev));
 
     const userId = userProfile?.id || 'demo-user';
     await updateUserProfileAvatar(userId, newAvatarUrl);
@@ -122,7 +118,7 @@ export default function HomePage() {
 
     // 1. Update user profile state
     setUserProfile((prev: any) => ({
-      ...prev,
+      ...(prev || {}),
       name: updated.name,
       city: updated.city || prev?.city,
       age: updated.age || prev?.age,
@@ -130,32 +126,64 @@ export default function HomePage() {
     }));
 
     // 2. Update role specific state
-    if (currentRole === 'talent' && talentData) {
-      const updatedTalent: TalentProfile = {
-        ...talentData,
-        name: updated.name,
-        bio: updated.bio || '',
-        city: updated.city || talentData.city,
-        age: updated.age || talentData.age,
-        position: updated.position || talentData.position,
-        avatarUrl: updated.avatarUrl || talentData.avatarUrl,
-      };
-      setTalentData(updatedTalent);
+    if (currentRole === 'talent') {
+      setTalentData((prev) => {
+        const base: TalentProfile = prev || {
+          id: userId,
+          userId: userId,
+          name: updated.name,
+          age: updated.age || 19,
+          position: updated.position || 'forward',
+          city: updated.city || 'Lahore',
+          bio: updated.bio || '',
+          avatarUrl: updated.avatarUrl,
+          preferredFoot: 'Right',
+          matches: [],
+          shortlistedBy: [],
+          createdAt: new Date().toISOString(),
+        };
+
+        return {
+          ...base,
+          name: updated.name,
+          bio: updated.bio !== undefined ? updated.bio : base.bio,
+          city: updated.city || base.city,
+          age: updated.age || base.age,
+          position: updated.position || base.position,
+          avatarUrl: updated.avatarUrl || base.avatarUrl,
+        };
+      });
     } else if (currentRole === 'scout') {
-      const updatedScout: ScoutProfile = {
-        id: scoutData?.id || 'scout-' + userId,
+      setScoutData((prev) => ({
+        id: prev?.id || 'scout-' + userId,
         userId: userId,
         name: updated.name,
-        organization: updated.organization || scoutData?.organization || 'Independent Scout',
-        avatarUrl: updated.avatarUrl || scoutData?.avatarUrl,
-        targetPositions: scoutData?.targetPositions || ['forward', 'midfielder'],
-        targetCities: scoutData?.targetCities || ['Karachi', 'Lahore'],
-        createdAt: scoutData?.createdAt || new Date().toISOString(),
-      };
-      setScoutData(updatedScout);
+        organization: updated.organization || prev?.organization || 'Independent Scout',
+        avatarUrl: updated.avatarUrl || prev?.avatarUrl,
+        targetPositions: prev?.targetPositions || ['forward', 'midfielder'],
+        targetCities: prev?.targetCities || ['Karachi', 'Lahore'],
+        createdAt: prev?.createdAt || new Date().toISOString(),
+      }));
     }
 
-    // 3. Persist via helper
+    // 3. Update talents feed state if talent item exists
+    setTalentsFeed((prevFeed) =>
+      prevFeed.map((item) =>
+        item.userId === userId || item.id === userId
+          ? {
+              ...item,
+              name: updated.name,
+              bio: updated.bio !== undefined ? updated.bio : item.bio,
+              city: updated.city || item.city,
+              age: updated.age || item.age,
+              position: updated.position || item.position,
+              avatarUrl: updated.avatarUrl || item.avatarUrl,
+            }
+          : item
+      )
+    );
+
+    // 4. Persist via helper
     await updateUserProfileFull(userId, currentRole, {
       name: updated.name,
       bio: updated.bio,
