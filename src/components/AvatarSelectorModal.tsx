@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Upload, Check, User, MapPin, Building, FileText, Camera, Shield, Award, Sparkles } from 'lucide-react';
+import { X, Upload, Check, User, MapPin, Building, FileText, Camera, Shield, Award } from 'lucide-react';
 import { UserRole, Position } from '../types';
 import { AvatarDisplay } from './AvatarDisplay';
 
@@ -227,25 +227,15 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
 
         {/* Modal Header */}
         <div className="flex items-center gap-3.5 mb-5 pb-4 border-b border-[#E5E7EB] shrink-0">
-          <div className="relative">
+          <div>
             <AvatarDisplay avatarUrl={previewUrl || currentAvatarUrl} name={name || 'User'} size="lg" />
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center border-2 border-white text-[10px]">
-              <Sparkles className="w-3 h-3" />
-            </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-sans font-bold text-[#111827]">
-                Update Profile & Mascot
-              </h3>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                role === 'talent' ? 'bg-[#16A34A]/10 text-[#16A34A]' : 'bg-[#D97706]/10 text-[#D97706]'
-              }`}>
-                {role === 'talent' ? 'Player Dossier' : 'Scout Account'}
-              </span>
-            </div>
+            <h3 className="text-lg font-sans font-bold text-[#111827]">
+              Update Profile & Mascot
+            </h3>
             <p className="text-xs text-[#6B7280] mt-0.5">
-              Customize your public scouting card, bio, and mascot avatar badge.
+              Customize your public profile, bio, and mascot avatar badge.
             </p>
           </div>
         </div>
@@ -380,24 +370,26 @@ export const AvatarSelectorModal: React.FC<AvatarSelectorModalProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedTab('mascots')}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   selectedTab === 'mascots'
                     ? 'bg-white text-[#111827] shadow-xs'
                     : 'text-[#6B7280] hover:text-[#111827]'
                 }`}
               >
-                🔥 Football Mascot Badges
+                <Shield className="w-3.5 h-3.5 text-[#16A34A]" />
+                <span>Football Mascot Badges</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedTab('upload')}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   selectedTab === 'upload'
                     ? 'bg-white text-[#111827] shadow-xs'
                     : 'text-[#6B7280] hover:text-[#111827]'
                 }`}
               >
-                📷 Upload Photo
+                <Upload className="w-3.5 h-3.5 text-[#16A34A]" />
+                <span>Upload Photo</span>
               </button>
             </div>
 
