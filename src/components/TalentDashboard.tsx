@@ -399,6 +399,7 @@ export const TalentDashboard: React.FC<TalentDashboardProps> = ({ talent, onUpda
         onDeleteMatch={handleDeleteMatch}
         isGeneratingReport={isGenerating}
         editingMatch={editingMatch}
+        existingMatches={talent.matches}
       />
 
     </div>

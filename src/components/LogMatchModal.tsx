@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Match } from '../types';
-import { X, PlusCircle, Activity, Trash2, Edit3, Save } from 'lucide-react';
+import { X, PlusCircle, Activity, Trash2, Edit3, Save, AlertTriangle } from 'lucide-react';
 
 interface LogMatchModalProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface LogMatchModalProps {
   onDeleteMatch?: (matchId: string) => void;
   isGeneratingReport?: boolean;
   editingMatch?: Match | null;
+  existingMatches?: Match[];
 }
 
 export const LogMatchModal: React.FC<LogMatchModalProps> = ({
@@ -18,6 +19,7 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   onDeleteMatch,
   isGeneratingReport = false,
   editingMatch = null,
+  existingMatches = [],
 }) => {
   const [goals, setGoals] = useState<string>('0');
   const [assists, setAssists] = useState<string>('0');
@@ -25,8 +27,10 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   const [opponent, setOpponent] = useState<string>('');
   const [matchDate, setMatchDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
+  const [duplicateWarning, setDuplicateWarning] = useState<{ opponent: string; date: string } | null>(null);
 
   useEffect(() => {
+    setDuplicateWarning(null);
     if (editingMatch) {
       setGoals(editingMatch.goals?.toString() || '0');
       setAssists(editingMatch.assists?.toString() || '0');
@@ -46,8 +50,7 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveMatch = (finalOpponent: string, finalDate: string) => {
     const gVal = goals === '' ? 0 : Math.max(0, parseInt(goals, 10) || 0);
     const aVal = assists === '' ? 0 : Math.max(0, parseInt(assists, 10) || 0);
     const mVal = minutesPlayed === '' ? 90 : Math.max(1, parseInt(minutesPlayed, 10) || 90);
@@ -57,19 +60,45 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
         goals: gVal,
         assists: aVal,
         minutesPlayed: mVal,
-        opponent: opponent || 'Opponent FC',
-        matchDate,
+        opponent: finalOpponent,
+        matchDate: finalDate,
         notes: notes || 'Match performance logged.',
       },
       editingMatch?.id
     );
 
-    // Reset form
+    // Reset form & state
     setGoals('0');
     setAssists('0');
     setMinutesPlayed('90');
     setOpponent('');
     setNotes('');
+    setDuplicateWarning(null);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formattedOpponent = opponent.trim() || 'Opponent FC';
+    const targetDate = matchDate;
+
+    // Check if duplicate check needed (same opponent & same date)
+    if (!duplicateWarning) {
+      const isDuplicate = existingMatches.some((m) => {
+        // When editing an existing match, ignore self
+        if (editingMatch && m.id === editingMatch.id) return false;
+        const existingOpponent = (m.opponent || 'Opponent FC').trim().toLowerCase();
+        const existingDate = m.matchDate;
+        return existingOpponent === formattedOpponent.toLowerCase() && existingDate === targetDate;
+      });
+
+      if (isDuplicate) {
+        setDuplicateWarning({ opponent: formattedOpponent, date: targetDate });
+        return;
+      }
+    }
+
+    saveMatch(formattedOpponent, targetDate);
   };
 
   const handleDelete = () => {
@@ -107,6 +136,45 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Duplicate Match Soft Confirmation Dialog Overlay */}
+        {duplicateWarning && (
+          <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-xs p-6 flex flex-col items-center justify-center text-center animate-fade-in">
+            <div className="w-14 h-14 rounded-2xl bg-[#D97706]/10 text-[#D97706] flex items-center justify-center mb-4 shadow-xs">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <h4 className="font-sans text-lg font-bold text-[#111827] mb-2">
+              Possible Duplicate Match
+            </h4>
+
+            <p className="text-xs text-[#4B5563] leading-relaxed max-w-sm mb-6">
+              You've already logged a match against <strong className="text-[#111827]">{duplicateWarning.opponent}</strong> on <strong className="text-[#111827]">{duplicateWarning.date}</strong> — are you sure this is a different match?
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  const opp = duplicateWarning.opponent;
+                  const dt = duplicateWarning.date;
+                  saveMatch(opp, dt);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                Yes, log it anyway
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDuplicateWarning(null)}
+                className="w-full py-2.5 px-4 rounded-xl border border-[#E5E7EB] text-[#374151] hover:bg-[#F1F5F9] text-xs font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
