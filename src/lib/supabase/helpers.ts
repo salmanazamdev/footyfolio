@@ -464,7 +464,9 @@ export async function saveMatchLog(userId: string, matchData: {
   if (isSupabaseConfigured() && !isGuestId(userId)) {
     try {
       const supabase = createClient();
-      if (matchData.id) {
+      const isUuid = Boolean(matchData.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(matchData.id));
+
+      if (isUuid) {
         // Update existing match
         const { data, error } = await supabase
           .from('matches')
@@ -481,24 +483,39 @@ export async function saveMatchLog(userId: string, matchData: {
           .single();
 
         if (!error && data) return data;
-      } else {
-        // Insert new match
-        const { data, error } = await supabase
-          .from('matches')
-          .insert({
-            profile_id: userId,
-            opponent: matchData.opponent || 'Competitive Match',
-            goals: matchData.goals || 0,
-            assists: matchData.assists || 0,
-            minutes_played: matchData.minutesPlayed || 0,
-            notes: matchData.notes || '',
-            match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
-          })
-          .select()
-          .single();
-
-        if (!error && data) return data;
       }
+
+      // Insert new match
+      const { data, error } = await supabase
+        .from('matches')
+        .insert({
+          profile_id: userId,
+          opponent: matchData.opponent || 'Competitive Match',
+          goals: matchData.goals || 0,
+          assists: matchData.assists || 0,
+          minutes_played: matchData.minutesPlayed || 0,
+          notes: matchData.notes || '',
+          match_date: matchData.matchDate || new Date().toISOString().split('T')[0],
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error inserting match to Supabase:', error);
+      } else if (data && typeof window !== 'undefined') {
+        try {
+          const existingKey = 'footyfolio_user_matches_' + userId;
+          const raw = localStorage.getItem(existingKey);
+          let list = raw ? JSON.parse(raw) : [];
+          const idx = list.findIndex((m: any) => m.id === matchId);
+          if (idx >= 0) {
+            list[idx].id = data.id;
+            localStorage.setItem(existingKey, JSON.stringify(list));
+          }
+        } catch (e) {}
+      }
+
+      if (data) return data;
     } catch (e) {
       console.warn('Supabase match log/update failed, saving locally:', e);
     }
@@ -757,7 +774,7 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
       supabase.from('shortlists').select('scout_profile_id').eq('talent_profile_id', userId),
     ]);
 
-    const formattedMatches: Match[] = (matches || []).map((m: any) => ({
+    let formattedMatches: Match[] = (matches || []).map((m: any) => ({
       id: m.id,
       talentProfileId: userId,
       goals: m.goals || 0,
@@ -767,6 +784,44 @@ export async function getTalentProfileForUser(userId: string): Promise<TalentPro
       matchDate: m.match_date || new Date().toISOString().split('T')[0],
       opponent: m.opponent || 'Match',
     }));
+
+    // Merge any local matches saved in localStorage for this user that might not be in Supabase yet
+    if (typeof window !== 'undefined') {
+      try {
+        const rawMatches = localStorage.getItem('footyfolio_user_matches_' + userId);
+        if (rawMatches) {
+          const localList: any[] = JSON.parse(rawMatches);
+          localList.forEach((lm) => {
+            const existsInSupabase = formattedMatches.some(
+              (sm) => sm.id === lm.id || (sm.opponent === lm.opponent && sm.matchDate === (lm.matchDate || lm.match_date))
+            );
+            if (!existsInSupabase) {
+              const localFormatted: Match = {
+                id: lm.id || 'm-' + Date.now(),
+                talentProfileId: userId,
+                goals: lm.goals || 0,
+                assists: lm.assists || 0,
+                minutesPlayed: lm.minutesPlayed || lm.minutes_played || 0,
+                notes: lm.notes || '',
+                matchDate: lm.matchDate || lm.match_date || new Date().toISOString().split('T')[0],
+                opponent: lm.opponent || 'Match',
+              };
+              formattedMatches.unshift(localFormatted);
+
+              // Sync missing local match to Supabase
+              saveMatchLog(userId, {
+                opponent: localFormatted.opponent,
+                goals: localFormatted.goals,
+                assists: localFormatted.assists,
+                minutesPlayed: localFormatted.minutesPlayed,
+                notes: localFormatted.notes,
+                matchDate: localFormatted.matchDate,
+              });
+            }
+          });
+        }
+      } catch (e) {}
+    }
 
     const latestReportRaw = reports && reports[0];
     const latestReport: ScoutingReport | undefined = latestReportRaw ? {

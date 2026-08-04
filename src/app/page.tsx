@@ -235,7 +235,7 @@ export default function HomePage() {
     if (userId && supabaseConfigured) {
       try {
         for (const m of updated.matches) {
-          await saveMatchLog(userId, {
+          const savedMatch = await saveMatchLog(userId, {
             id: m.id,
             opponent: m.opponent || 'Match',
             goals: m.goals,
@@ -244,6 +244,9 @@ export default function HomePage() {
             notes: m.notes,
             matchDate: m.matchDate,
           });
+          if (savedMatch && savedMatch.id && savedMatch.id !== m.id) {
+            m.id = savedMatch.id;
+          }
         }
         if (updated.latestReport) {
           await saveScoutingReport(userId, {
