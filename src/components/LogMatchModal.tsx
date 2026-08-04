@@ -27,10 +27,15 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
   const [opponent, setOpponent] = useState<string>('');
   const [matchDate, setMatchDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState<string>('');
-  const [duplicateWarning, setDuplicateWarning] = useState<{ opponent: string; date: string } | null>(null);
+  const [warning, setWarning] = useState<{
+    type: 'exact_duplicate' | 'same_date';
+    opponent: string;
+    date: string;
+    existingOpponent?: string;
+  } | null>(null);
 
   useEffect(() => {
-    setDuplicateWarning(null);
+    setWarning(null);
     if (editingMatch) {
       setGoals(editingMatch.goals?.toString() || '0');
       setAssists(editingMatch.assists?.toString() || '0');
@@ -73,7 +78,7 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
     setMinutesPlayed('90');
     setOpponent('');
     setNotes('');
-    setDuplicateWarning(null);
+    setWarning(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -82,18 +87,35 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
     const formattedOpponent = opponent.trim() || 'Opponent FC';
     const targetDate = matchDate;
 
-    // Check if duplicate check needed (same opponent & same date)
-    if (!duplicateWarning) {
-      const isDuplicate = existingMatches.some((m) => {
-        // When editing an existing match, ignore self
+    if (!warning) {
+      // Find any match on the same date (ignoring self if editing)
+      const matchesOnSameDate = existingMatches.filter((m) => {
         if (editingMatch && m.id === editingMatch.id) return false;
-        const existingOpponent = (m.opponent || 'Opponent FC').trim().toLowerCase();
-        const existingDate = m.matchDate;
-        return existingOpponent === formattedOpponent.toLowerCase() && existingDate === targetDate;
+        return m.matchDate === targetDate;
       });
 
-      if (isDuplicate) {
-        setDuplicateWarning({ opponent: formattedOpponent, date: targetDate });
+      if (matchesOnSameDate.length > 0) {
+        // Check for exact duplicate (same opponent)
+        const exactDuplicate = matchesOnSameDate.find(
+          (m) => (m.opponent || 'Opponent FC').trim().toLowerCase() === formattedOpponent.toLowerCase()
+        );
+
+        if (exactDuplicate) {
+          setWarning({
+            type: 'exact_duplicate',
+            opponent: formattedOpponent,
+            date: targetDate,
+          });
+          return;
+        }
+
+        // Same date, different opponent
+        setWarning({
+          type: 'same_date',
+          opponent: formattedOpponent,
+          date: targetDate,
+          existingOpponent: matchesOnSameDate[0].opponent || 'another opponent',
+        });
         return;
       }
     }
@@ -137,37 +159,47 @@ export const LogMatchModal: React.FC<LogMatchModalProps> = ({
           </button>
         </div>
 
-        {/* Duplicate Match Soft Confirmation Dialog Overlay */}
-        {duplicateWarning && (
+        {/* Soft Confirmation Warning Overlay */}
+        {warning && (
           <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-xs p-6 flex flex-col items-center justify-center text-center animate-fade-in">
             <div className="w-14 h-14 rounded-2xl bg-[#D97706]/10 text-[#D97706] flex items-center justify-center mb-4 shadow-xs">
               <AlertTriangle className="w-7 h-7" />
             </div>
 
             <h4 className="font-sans text-lg font-bold text-[#111827] mb-2">
-              Possible Duplicate Match
+              {warning.type === 'exact_duplicate'
+                ? 'Possible Duplicate Match'
+                : 'Match Already Logged on This Date'}
             </h4>
 
             <p className="text-xs text-[#4B5563] leading-relaxed max-w-sm mb-6">
-              You've already logged a match against <strong className="text-[#111827]">{duplicateWarning.opponent}</strong> on <strong className="text-[#111827]">{duplicateWarning.date}</strong> — are you sure this is a different match?
+              {warning.type === 'exact_duplicate' ? (
+                <>
+                  You've already logged a match against <strong className="text-[#111827]">{warning.opponent}</strong> on <strong className="text-[#111827]">{warning.date}</strong> — are you sure this is a different match?
+                </>
+              ) : (
+                <>
+                  You've already logged a match on <strong className="text-[#111827]">{warning.date}</strong> (vs. <strong className="text-[#111827]">{warning.existingOpponent}</strong>) — do you want to log another match for this date?
+                </>
+              )}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs">
               <button
                 type="button"
                 onClick={() => {
-                  const opp = duplicateWarning.opponent;
-                  const dt = duplicateWarning.date;
+                  const opp = warning.opponent;
+                  const dt = warning.date;
                   saveMatch(opp, dt);
                 }}
                 className="w-full py-2.5 px-4 rounded-xl bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
-                Yes, log it anyway
+                {warning.type === 'exact_duplicate' ? 'Yes, log it anyway' : 'Yes, log another match'}
               </button>
 
               <button
                 type="button"
-                onClick={() => setDuplicateWarning(null)}
+                onClick={() => setWarning(null)}
                 className="w-full py-2.5 px-4 rounded-xl border border-[#E5E7EB] text-[#374151] hover:bg-[#F1F5F9] text-xs font-bold transition-colors cursor-pointer"
               >
                 Cancel
